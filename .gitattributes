@@ -1,0 +1,2 @@
+# Exclude website source from git archive (GitHub source downloads)
+docs/web/ export-ignore

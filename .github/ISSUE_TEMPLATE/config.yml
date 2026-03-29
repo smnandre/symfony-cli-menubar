@@ -1,0 +1,9 @@
+name: Setup Issue Templates
+description: Choose a template for your issue
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue!
+        
+        Please choose the appropriate issue type below.

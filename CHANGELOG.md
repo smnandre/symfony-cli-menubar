@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-03-29
+
 ### Added
 - Native macOS menu bar app for managing Symfony local servers.
 - Server Management: Start, stop, and monitor status of Symfony servers.

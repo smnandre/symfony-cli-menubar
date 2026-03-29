@@ -1,6 +1,4 @@
 name: Release
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
   push:
@@ -13,6 +11,8 @@ permissions:
 jobs:
   release:
     runs-on: macos-15
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Pre-flight Secrets Check

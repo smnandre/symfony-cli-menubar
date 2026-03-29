@@ -179,17 +179,30 @@ jobs:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          # sign_update is included in the SPM binary artifact fetched by swift build
+          set -euo pipefail
+
           SIGN_UPDATE=".build/artifacts/sparkle/Sparkle/bin/sign_update"
-          if [ -z "$SPARKLE_PRIVATE_KEY" ]; then
-            echo "::warning::SPARKLE_PRIVATE_KEY not set — skipping Sparkle signature"
-            echo "SPARKLE_SIGNATURE=" >> $GITHUB_ENV
-          else
-            SIGNATURE=$("$SIGN_UPDATE" \
-              "SymfonyCLIMenuBar-${VERSION}.zip" \
-              -s "$SPARKLE_PRIVATE_KEY")
-            echo "SPARKLE_SIGNATURE=$SIGNATURE" >> $GITHUB_ENV
+          ARCHIVE="SymfonyCLIMenuBar-${VERSION}.zip"
+
+          if [ ! -x "$SIGN_UPDATE" ]; then
+            echo "::error::sign_update not found or not executable at $SIGN_UPDATE"
+            exit 1
           fi
+
+          if [ -z "${SPARKLE_PRIVATE_KEY:-}" ]; then
+            echo "::warning::SPARKLE_PRIVATE_KEY not set — skipping Sparkle signature"
+            echo "SPARKLE_SIGNATURE=" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          KEY_FILE="$(mktemp "$RUNNER_TEMP/sparkle-private-key.XXXXXX")"
+          trap 'rm -f "$KEY_FILE"' EXIT
+
+          chmod 600 "$KEY_FILE"
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$KEY_FILE"
+
+          SIGNATURE="$("$SIGN_UPDATE" --ed-key-file "$KEY_FILE" -p "$ARCHIVE")"
+          echo "SPARKLE_SIGNATURE=$SIGNATURE" >> "$GITHUB_ENV"
 
       - name: Update appcast
         env:
@@ -209,7 +222,7 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          sed -i "s/\"softwareVersion\": \"[^\"]*\"/\"softwareVersion\": \"${VERSION}\"/" docs/web/index.html
+          sed -i '' "s/\"softwareVersion\": \"[^\"]*\"/\"softwareVersion\": \"${VERSION}\"/" docs/web/index.html
 
       - name: Commit updated appcast and website
         env:

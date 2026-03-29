@@ -6,5 +6,17 @@
         <title>Symfony CLI MenuBar Updates</title>
         <link>https://smnandre.github.io/symfony-cli-menubar/appcast.xml</link>
         <language>en</language>
+        <item>
+            <title>Version 0.9.9</title>
+            <pubDate>Sun, 29 Mar 2026 21:19:48 +0000</pubDate>
+            <enclosure
+                url="https://github.com/smnandre/symfony-cli-menubar/releases/download/v0.9.9/SymfonyCLIMenuBar-0.9.9.zip"
+                sparkle:version="1"
+                sparkle:shortVersionString="0.9.9"
+                sparkle:edSignature="l7BaaaFrfkHk+tXOid9OlEkSD1y2n6gOsTT7AXOfq3dP6cnt5WPk01D4yn9sutnMupeYGweb1UpjAB6OEfMBAg=="
+                length="3273474"
+                type="application/octet-stream" />
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+        </item>
     </channel>
 </rss>

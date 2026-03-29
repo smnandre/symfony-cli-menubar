@@ -128,6 +128,8 @@ jobs:
             "SymfonyCLIMenuBar-${VERSION}.dmg"
 
       - name: Notarize DMG
+        id: notarization
+        continue-on-error: true
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_NOTARIZATION_PASSWORD: ${{ secrets.APPLE_NOTARIZATION_PASSWORD }}
@@ -139,6 +141,23 @@ jobs:
             --password "$APPLE_NOTARIZATION_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \
             --wait
+
+      - name: Notarization Diagnostics
+        if: steps.notarization.outcome == "failure"
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_NOTARIZATION_PASSWORD: ${{ secrets.APPLE_NOTARIZATION_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          echo "::error::Notarization failed. Fetching logs..."
+          SUBMISSION_ID=$(xcrun notarytool history --apple-id "$APPLE_ID" --password "$APPLE_NOTARIZATION_PASSWORD" --team-id "$APPLE_TEAM_ID" --limit 1 | grep -E "^[0-9a-f-]{36}" | awk "{print $1}")
+          if [ -n "$SUBMISSION_ID" ]; then
+            echo "Submission ID: $SUBMISSION_ID"
+            xcrun notarytool log "$SUBMISSION_ID" --apple-id "$APPLE_ID" --password "$APPLE_NOTARIZATION_PASSWORD" --team-id "$APPLE_TEAM_ID"
+          else
+            echo "Could not find submission ID in history."
+          fi
+          exit 1
 
       - name: Staple notarization ticket
         env:

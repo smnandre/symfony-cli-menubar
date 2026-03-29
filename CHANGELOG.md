@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.4] - 2026-03-29
+### Fixed
+- Restore notarization diagnostics step in CI
+
 ## [0.9.3] - 2026-03-29
 ### Fixed
 - Robust recursive signing for notarization

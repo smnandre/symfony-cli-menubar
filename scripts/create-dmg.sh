@@ -54,7 +54,7 @@ hdiutil create -srcfolder "$DMG_DIR" \
 
 # Mount the temporary DMG
 MOUNT_DIR=$(hdiutil attach -readwrite -noverify -noautoopen "$DMG_TEMP" | \
-    grep -E '^/dev/' | tail -1 | awk '{print $NF}')
+    grep -E '^/dev/' | tail -1 | cut -f 3-)
 
 echo "📂 Mounted at: $MOUNT_DIR"
 

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-03-29
+### Fixed
+- Fix notarization failure by improving entitlements and signing process
+
 ## [0.9.1] - 2026-03-29
 ### Fixed
 - Fix DMG mount point handling for paths with spaces

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.3] - 2026-03-29
+### Fixed
+- Robust recursive signing for notarization
+- Added Apple Events entitlement for Terminal access
+- Added automatic notarization log retrieval on failure
+
 ## [0.9.2] - 2026-03-29
 ### Fixed
 - Fix notarization failure by improving entitlements and signing process

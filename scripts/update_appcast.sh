@@ -51,8 +51,16 @@ XML
 )
 
 # Insert new item before </channel>
+ITEM_FILE=$(mktemp)
 TMP=$(mktemp)
-awk -v item="$NEW_ITEM" '/<\/channel>/ { print item } { print }' "$APPCAST" > "$TMP"
+printf '%s\n' "$NEW_ITEM" > "$ITEM_FILE"
+
+LINE=$(grep -n '</channel>' "$APPCAST" | head -1 | cut -d: -f1)
+head -n $((LINE - 1)) "$APPCAST" > "$TMP"
+cat "$ITEM_FILE" >> "$TMP"
+tail -n +"$LINE" "$APPCAST" >> "$TMP"
+
 mv "$TMP" "$APPCAST"
+rm -f "$ITEM_FILE"
 
 echo "Appcast updated: v${VERSION} (build ${BUILD_NUMBER})"

@@ -11,6 +11,9 @@
     <true/>
     <key>com.apple.security.cs.allow-dyld-environment-variables</key>
     <true/>
+    <!-- Allow automating other apps (Terminal) -->
+    <key>com.apple.security.automation.apple-events</key>
+    <true/>
     <!-- File Access (since we are not sandboxed, these are mostly for future-proofing) -->
     <key>com.apple.security.files.user-selected.read-write</key>
     <true/>

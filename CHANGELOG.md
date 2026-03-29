@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.6] - 2026-03-29
+### Fixed
+- Sign all Sparkle nested executables (Updater.app, Autoupdate, framework XPC services) for notarization
+- Add apple-events entitlement for Terminal automation
+- Replace fragile notarization diagnostics with reliable JSON-based submission ID capture
+- Remove continue-on-error on notarization step so failures are reported immediately
+
 ## [0.9.5] - 2026-03-29
 ### Fixed
 - Fix workflow syntax error in release automation

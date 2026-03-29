@@ -15,6 +15,7 @@ xcuserdata/
 *.xcscmblueprint
 *.xccheckout
 .idea/
+.swiftpm/
 
 # macOS
 .DS_Store

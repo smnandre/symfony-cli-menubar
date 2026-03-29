@@ -187,7 +187,7 @@ jobs:
           else
             SIGNATURE=$("$SIGN_UPDATE" \
               "SymfonyCLIMenuBar-${VERSION}.zip" \
-              --ed-key "$SPARKLE_PRIVATE_KEY")
+              -s "$SPARKLE_PRIVATE_KEY")
             echo "SPARKLE_SIGNATURE=$SIGNATURE" >> $GITHUB_ENV
           fi
 

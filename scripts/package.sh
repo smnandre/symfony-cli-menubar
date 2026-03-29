@@ -186,7 +186,14 @@ fi
 # Strip extended attributes before signing
 xattr -cr "$APP_BUNDLE"
 
-# Sign
+# Sign main binary with entitlements first
+echo "🖋️ Signing main executable..."
+codesign "${CODESIGN_ARGS[@]}" \
+  --entitlements "$ENTITLEMENTS_PATH" \
+  "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
+
+# Sign bundle
+echo "🖋️ Signing bundle..."
 codesign "${CODESIGN_ARGS[@]}" \
   --entitlements "$ENTITLEMENTS_PATH" \
   "$APP_BUNDLE"

@@ -129,35 +129,37 @@ jobs:
 
       - name: Notarize DMG
         id: notarization
-        continue-on-error: true
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_NOTARIZATION_PASSWORD: ${{ secrets.APPLE_NOTARIZATION_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          xcrun notarytool submit "SymfonyCLIMenuBar-${VERSION}.dmg" \
+          set -euo pipefail
+
+          RESULT=$(xcrun notarytool submit "SymfonyCLIMenuBar-${VERSION}.dmg" \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_NOTARIZATION_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \
-            --wait
+            --wait \
+            --output-format json) || true
 
-      - name: Notarization Diagnostics
-        if: steps.notarization.outcome == 'failure'
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_NOTARIZATION_PASSWORD: ${{ secrets.APPLE_NOTARIZATION_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          echo "::error::Notarization failed. Fetching logs..."
-          SUBMISSION_ID=$(xcrun notarytool history --apple-id "$APPLE_ID" --password "$APPLE_NOTARIZATION_PASSWORD" --team-id "$APPLE_TEAM_ID" --limit 1 | grep -E '^[0-9a-f-]{36}' | awk '{print $1}')
-          if [ -n "$SUBMISSION_ID" ]; then
-            echo "Submission ID: $SUBMISSION_ID"
-            xcrun notarytool log "$SUBMISSION_ID" --apple-id "$APPLE_ID" --password "$APPLE_NOTARIZATION_PASSWORD" --team-id "$APPLE_TEAM_ID"
-          else
-            echo "Could not find submission ID in history."
+          echo "$RESULT"
+
+          SUBMISSION_ID=$(echo "$RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+          STATUS=$(echo "$RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])")
+
+          echo "Notarization status: $STATUS (submission: $SUBMISSION_ID)"
+
+          if [ "$STATUS" != "Accepted" ]; then
+            echo "::error::Notarization failed with status=$STATUS (submission: $SUBMISSION_ID)"
+            echo "Fetching detailed log..."
+            xcrun notarytool log "$SUBMISSION_ID" \
+              --apple-id "$APPLE_ID" \
+              --password "$APPLE_NOTARIZATION_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" || true
+            exit 1
           fi
-          exit 1
 
       - name: Staple notarization ticket
         env:

@@ -43,10 +43,33 @@ if [[ -n "$IDENTITY" ]]; then
     echo "Signing Sparkle components with: $IDENTITY"
     SIGN_ARGS=(--force --timestamp --options runtime --sign "$IDENTITY")
 
+    # Sign inside-out: deepest nested code first, then the framework
+
     for xpc in "$APP_BUNDLE/Contents/XPCServices/"*.xpc; do
         [[ -e "$xpc" ]] || continue
         codesign "${SIGN_ARGS[@]}" "$xpc"
     done
+
+    # Sign Updater.app inside the framework
+    UPDATER_APP="$APP_BUNDLE/Contents/Frameworks/Sparkle.framework/Versions/B/Updater.app"
+    if [[ -d "$UPDATER_APP" ]]; then
+        codesign "${SIGN_ARGS[@]}" "$UPDATER_APP"
+    fi
+
+    # Sign Autoupdate binary inside the framework
+    AUTOUPDATE_BIN="$APP_BUNDLE/Contents/Frameworks/Sparkle.framework/Versions/B/Autoupdate"
+    if [[ -f "$AUTOUPDATE_BIN" ]]; then
+        codesign "${SIGN_ARGS[@]}" "$AUTOUPDATE_BIN"
+    fi
+
+    # Sign XPC services inside the framework itself
+    FW_XPC_DIR="$APP_BUNDLE/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices"
+    if [[ -d "$FW_XPC_DIR" ]]; then
+        for xpc in "$FW_XPC_DIR"/*.xpc; do
+            [[ -e "$xpc" ]] || continue
+            codesign "${SIGN_ARGS[@]}" "$xpc"
+        done
+    fi
 
     codesign "${SIGN_ARGS[@]}" \
         "$APP_BUNDLE/Contents/Frameworks/Sparkle.framework"

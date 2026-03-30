@@ -1,5 +1,6 @@
 # Build artifacts
 .build/
+assets/AppIcon.iconset/
 *.app
 *.dmg
 *.zip

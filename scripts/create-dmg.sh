@@ -1,16 +1,27 @@
 #!/bin/bash
 #
-# Create a DMG installer for Symfony CLI Menu Bar
+# Create a DMG installer for Symfony CLI MenuBar
 # Usage: ./scripts/create-dmg.sh [version]
 #
 
 set -e
 
-VERSION="${1:-1.0.0}"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+VERSION="${1:-}"
+if [ -z "$VERSION" ]; then
+    if [ -f "$ROOT/config/version.env" ]; then
+        source "$ROOT/config/version.env"
+        VERSION="$MARKETING_VERSION"
+    else
+        echo "Error: No version specified and config/version.env not found." >&2
+        exit 1
+    fi
+fi
 APP_NAME="SymfonyCLIMenuBar"
 DMG_NAME="${APP_NAME}-${VERSION}.dmg"
 DMG_TEMP="${APP_NAME}-temp.dmg"
-VOLUME_NAME="Symfony CLI Menu Bar"
+VOLUME_NAME="Symfony CLI MenuBar"
 APP_BUNDLE="${APP_NAME}.app"
 
 echo "📦 Creating DMG for ${APP_NAME} v${VERSION}..."
@@ -30,9 +41,6 @@ cp -R "$APP_BUNDLE" "$DMG_DIR/"
 
 # Create Applications symlink
 ln -s /Applications "$DMG_DIR/Applications"
-
-# Create a background image directory (optional, for custom backgrounds)
-mkdir -p "$DMG_DIR/.background"
 
 # Calculate size needed (app size + 10MB buffer)
 APP_SIZE=$(du -sm "$APP_BUNDLE" | cut -f1)
@@ -67,12 +75,12 @@ tell application "Finder"
         set current view of container window to icon view
         set toolbar visible of container window to false
         set statusbar visible of container window to false
-        set bounds of container window to {400, 100, 900, 400}
+        set bounds of container window to {400, 100, 920, 430}
         set theViewOptions to the icon view options of container window
         set arrangement of theViewOptions to not arranged
-        set icon size of theViewOptions to 80
-        set position of item "$APP_BUNDLE" of container window to {120, 140}
-        set position of item "Applications" of container window to {380, 140}
+        set icon size of theViewOptions to 128
+        set position of item "$APP_BUNDLE" of container window to {130, 150}
+        set position of item "Applications" of container window to {390, 150}
         update without registering applications
         close
     end tell
@@ -81,6 +89,12 @@ EOF
 
 # Wait a bit for Finder to update
 sleep 2
+
+# Clean up filesystem artifacts created during the read-write mount
+rm -rf "$MOUNT_DIR/.fseventsd" "$MOUNT_DIR/.Trashes" "$MOUNT_DIR/.background"
+mkdir -p "$MOUNT_DIR/.fseventsd"
+touch "$MOUNT_DIR/.fseventsd/no_log"
+chflags hidden "$MOUNT_DIR/.fseventsd"
 
 # Unmount
 hdiutil detach "$MOUNT_DIR"

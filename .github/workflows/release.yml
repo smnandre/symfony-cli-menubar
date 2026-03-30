@@ -222,7 +222,11 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
+          DMG_URL="https://github.com/smnandre/symfony-cli-menubar/releases/download/v${VERSION}/SymfonyCLIMenuBar-${VERSION}.dmg"
           sed -i '' "s/\"softwareVersion\": \"[^\"]*\"/\"softwareVersion\": \"${VERSION}\"/" docs/web/index.html
+          sed -i '' "s|<strong>v[^<]*</strong>|<strong>v${VERSION}</strong>|" docs/web/index.html
+          sed -i '' "s|\"downloadUrl\": \"[^\"]*\"|\"downloadUrl\": \"${DMG_URL}\"|" docs/web/index.html
+          sed -i '' '/btn--primary/s|href="[^"]*"|href="'"${DMG_URL}"'"|' docs/web/index.html
 
       - name: Commit updated appcast and website
         env:

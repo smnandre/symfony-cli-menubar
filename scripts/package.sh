@@ -11,7 +11,7 @@ cd "$ROOT"
 # --- App Configuration ---
 # TODO: Review and update these values as needed.
 APP_NAME="SymfonyCLIMenuBar"
-APP_DISPLAY_NAME="Symfony CLI Menu Bar"
+APP_DISPLAY_NAME="Symfony CLI MenuBar"
 BUNDLE_ID="com.simonandre.SymfonyCLIMenuBar"
 MACOS_MIN_VERSION="14.0"
 MENU_BAR_APP="1" # Set to 1 for menu bar apps to set LSUIElement=true
@@ -75,8 +75,8 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleName</key><string>Symfony CLI Menu Bar</string>
-    <key>CFBundleDisplayName</key><string>Symfony CLI Menu Bar</string>
+    <key>CFBundleName</key><string>Symfony CLI MenuBar</string>
+    <key>CFBundleDisplayName</key><string>Symfony CLI MenuBar</string>
     <key>CFBundleIdentifier</key><string>${BUNDLE_ID}</string>
     <key>CFBundleExecutable</key><string>${APP_NAME}</string>
     <key>CFBundlePackageType</key><string>APPL</string>
@@ -87,7 +87,7 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
     <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>NSHighResolutionCapable</key><true/>
     <key>NSHumanReadableCopyright</key><string>${COPYRIGHT_NOTICE}</string>
-    <key>NSAppleEventsUsageDescription</key><string>Symfony CLI Menu Bar needs permission to open Terminal for viewing logs and running commands.</string>
+    <key>NSAppleEventsUsageDescription</key><string>Symfony CLI MenuBar needs permission to open Terminal for viewing logs and running commands.</string>
     <key>BuildTimestamp</key><string>${BUILD_TIMESTAMP}</string>
     <key>GitCommit</key><string>${GIT_COMMIT}</string>
     <key>SUFeedURL</key><string>${SPARKLE_FEED_URL}</string>

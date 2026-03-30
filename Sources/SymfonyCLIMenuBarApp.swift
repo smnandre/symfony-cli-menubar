@@ -15,7 +15,7 @@ import Sparkle
 // MARK: - App Constants
 
 enum AppInfo {
-    static let name = "Symfony CLI Menu Bar"
+    static let name = "Symfony CLI MenuBar"
     static let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "dev"
     static let build   = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
     static let author = "Simon André"
@@ -69,8 +69,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let sparkleKey = (Bundle.main.infoDictionary?["SUPublicEDKey"] as? String) ?? ""
         if !sparkleKey.isEmpty {
             updaterController = SPUStandardUpdaterController(
-                startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil
+                startingUpdater: false, updaterDelegate: nil, userDriverDelegate: nil
             )
+            try? updaterController.updater.start()
         }
 
         serverManager = SymfonyServerManager()

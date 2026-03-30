@@ -92,6 +92,7 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
     <key>GitCommit</key><string>${GIT_COMMIT}</string>
     <key>SUFeedURL</key><string>${SPARKLE_FEED_URL}</string>
     <key>SUPublicEDKey</key><string>${SPARKLE_PUBLIC_KEY}</string>
+    <key>SUEnableAutomaticChecks</key><true/>
 </dict>
 </plist>
 PLIST

@@ -1,8 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# This script is adapted from the macos-spm-app-packaging skill
-# It builds, bundles, and signs the SymfonyCLIMenuBar application.
+# =============================================================================
+# package.sh — Build, bundle, and sign the SymfonyCLIMenuBar application
+# =============================================================================
+#
+# Called by:
+#   - CI (.github/workflows/release.yml, "Build and package" step) on every
+#     tag push, with SIGNING_MODE=developer and VERSION set from the git tag.
+#   - Developers locally for test builds: ./scripts/package.sh [release|debug]
+#
+# What it does:
+#   1. Reads version from config/version.env (overridden by VERSION env var in CI)
+#   2. Compiles the Swift target for each architecture (arm64, x86_64, or host)
+#   3. Lipo-merges multi-arch binaries into a universal binary if needed
+#   4. Assembles the .app bundle (binary, Info.plist, PkgInfo, resources, icon)
+#   5. Embeds Sparkle.framework + XPC services via scripts/embed_sparkle.sh
+#   6. Code-signs the bundle (ad-hoc locally, Developer ID in CI)
+#
+# Environment variables (CI sets these; sane defaults for local use):
+#   VERSION         Git tag version (e.g. 1.2.0) — overrides config/version.env
+#   SIGNING_MODE    "developer" or "adhoc" (default: developer)
+#   APP_IDENTITY    Signing identity string from Keychain
+#   SPARKLE_PUBLIC_KEY  EdDSA public key embedded in Info.plist (SUPublicEDKey)
+#   ARCHES          Space-separated list of target architectures (default: host arch)
+#
+# Output: SymfonyCLIMenuBar.app in the repository root
+# =============================================================================
 
 CONF=${1:-release}
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -37,6 +61,11 @@ else
   echo "config/version.env not found. Using default version numbers."
   MARKETING_VERSION=${MARKETING_VERSION:-1.0.0}
   BUILD_NUMBER=${BUILD_NUMBER:-1}
+fi
+
+# Allow CI to override via environment (e.g. VERSION=0.11.0 from the git tag)
+if [[ -n "${VERSION:-}" ]]; then
+  MARKETING_VERSION="$VERSION"
 fi
 
 echo " MBuilding $APP_NAME v$MARKETING_VERSION ($BUILD_NUMBER) for $CONF..."

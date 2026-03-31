@@ -1,8 +1,30 @@
 #!/bin/bash
+# =============================================================================
+# create-dmg.sh — Create a signed DMG installer for SymfonyCLIMenuBar
+# =============================================================================
 #
-# Create a DMG installer for Symfony CLI MenuBar
-# Usage: ./scripts/create-dmg.sh [version]
+# Called by:
+#   - CI (.github/workflows/release.yml, "Create DMG" step) after package.sh
+#     has produced SymfonyCLIMenuBar.app
+#   - Developers locally to produce a distributable DMG: ./scripts/create-dmg.sh [version]
 #
+# What it does:
+#   1. Reads the version from the argument or falls back to config/version.env
+#   2. Creates a staging directory with the .app and an /Applications symlink
+#   3. Builds a read-write HFS+ DMG, mounts it, and configures window layout
+#      via AppleScript (icon positions, window bounds, icon size)
+#   4. Converts to a compressed (UDZO) final DMG
+#   The resulting DMG is then signed and notarized by the CI workflow.
+#
+# Usage:
+#   ./scripts/create-dmg.sh [VERSION]
+#
+#   VERSION   Marketing version string (e.g. 1.2.0). Falls back to
+#             MARKETING_VERSION from config/version.env if not provided.
+#
+# Output: SymfonyCLIMenuBar-<VERSION>.dmg in the current directory
+# Prerequisites: SymfonyCLIMenuBar.app must already exist in the current directory
+# =============================================================================
 
 set -e
 

@@ -42,7 +42,7 @@ Be respectful, constructive, and professional in all interactions.
    ```bash
    swift build
    swift test
-   ./build.sh
+   ./scripts/package.sh
    open SymfonyCLIMenuBar.app
    ```
 
@@ -65,7 +65,7 @@ Be respectful, constructive, and professional in all interactions.
 
 ### Requirements
 
-- macOS 13.0 (Ventura) or later
+- macOS 14.0 (Sonoma) or later
 - Xcode 15+ with Swift 5.9+
 - [Symfony CLI](https://symfony.com/download) for testing
 - Homebrew (for icon generation)
@@ -79,7 +79,7 @@ cd symfony-cli-menubar
 
 # Build
 swift build -c release
-./build.sh
+./scripts/package.sh
 
 # Run
 open SymfonyCLIMenuBar.app
@@ -94,8 +94,11 @@ SymfonyCLIMenuBar/
 │   ├── SymfonyServerManager.swift  # Symfony CLI integration, state management
 │   └── MenuBuilder.swift           # Menu construction, actions, UI
 ├── scripts/
+│   ├── bump-version.sh             # Optional local version bump preview
+│   ├── package.sh                  # Build, bundle, and sign the .app
+│   ├── embed_sparkle.sh            # Sparkle framework embedding & signing
 │   ├── create-dmg.sh              # DMG packaging for distribution
-│   └── notarize.sh                # Apple notarization workflow
+│   └── update_appcast.sh          # Sparkle appcast feed update
 ├── .github/workflows/
 │   ├── build.yml                  # CI for PRs and commits
 │   └── release.yml                # Release automation on tags
@@ -149,58 +152,9 @@ final class SymfonyServerManagerTests: XCTestCase {
 ### Icon Generation
 
 ```bash
-# Install librsvg
 brew install librsvg
-
-# Generate app icon
-./generate_icns.sh
+./assets/generate_icns.sh
 ```
-
-## Code Signing (for contributors)
-
-For local development, unsigned builds work fine. For distribution:
-
-1. **Get Developer ID certificate** from Apple Developer account
-2. **Sign the app**:
-   ```bash
-   codesign --force --deep --sign "Developer ID Application: Your Name (TEAMID)" \
-     SymfonyCLIMenuBar.app
-   ```
-3. **Create DMG**:
-   ```bash
-   ./scripts/create-dmg.sh 1.0.0
-   ```
-4. **Notarize** (requires app-specific password):
-   ```bash
-   # Store credentials once
-   xcrun notarytool store-credentials "AC_PASSWORD" \
-     --apple-id "your@email.com" \
-     --team-id "TEAMID" \
-     --password "app-specific-password"
-   
-   # Notarize
-   ./scripts/notarize.sh SymfonyCLIMenuBar-1.0.0.dmg
-   ```
-
-## Release Process
-
-Releases are automated via GitHub Actions:
-
-1. **Update version** in:
-   - `Info.plist` (CFBundleShortVersionString)
-   - `SymfonyCLIMenuBarApp.swift` (AppInfo.version)
-
-2. **Create and push tag**:
-   ```bash
-   git tag -a v1.0.1 -m "Release v1.0.1"
-   git push origin v1.0.1
-   ```
-
-3. **GitHub Actions** will:
-   - Build the app
-   - Generate icon
-   - Create DMG and ZIP
-   - Create GitHub release with notes
 
 ## Questions?
 

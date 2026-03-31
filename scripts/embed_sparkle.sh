@@ -1,11 +1,34 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Embeds Sparkle framework and XPC services into an .app bundle.
-# Uses the Sparkle binary already downloaded by `swift build` via SPM —
-# no separate download required.
+# =============================================================================
+# embed_sparkle.sh — Embed and sign Sparkle framework into an .app bundle
+# =============================================================================
 #
-# Usage: ./scripts/embed_sparkle.sh <APP_BUNDLE> [SIGNING_IDENTITY]
+# Called by:
+#   - scripts/package.sh (never called directly by CI)
+#
+# What it does:
+#   1. Locates Sparkle.xcframework from the SPM binary artifact cache
+#      (.build/artifacts/sparkle/Sparkle/Sparkle.xcframework)
+#      — requires `swift build` to have already run so SPM has resolved it
+#   2. Copies Sparkle.framework into APP_BUNDLE/Contents/Frameworks/
+#   3. Copies XPC services into APP_BUNDLE/Contents/XPCServices/
+#   4. Code-signs all Sparkle components inside-out when an identity is given:
+#        XPC services at the app level
+#        → Updater.app inside the framework
+#        → Autoupdate binary inside the framework
+#        → XPC services inside the framework
+#        → Sparkle.framework itself
+#      This inside-out order is required by codesign — signing an outer bundle
+#      before its inner components produces an invalid signature.
+#
+# Usage:
+#   ./scripts/embed_sparkle.sh <APP_BUNDLE_PATH> [SIGNING_IDENTITY]
+#
+#   APP_BUNDLE_PATH   Path to the .app bundle (e.g. SymfonyCLIMenuBar.app)
+#   SIGNING_IDENTITY  Optional codesign identity; if omitted, skips signing
+# =============================================================================
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP_BUNDLE="${1:?Usage: embed_sparkle.sh <APP_BUNDLE_PATH> [SIGNING_IDENTITY]}"

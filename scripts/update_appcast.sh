@@ -1,14 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Prepends a new release <item> into docs/appcast.xml.
-# Run this after signing the ZIP with sign_update.
+# =============================================================================
+# update_appcast.sh — Prepend a new release entry into docs/appcast.xml
+# =============================================================================
 #
-# Usage: ./scripts/update_appcast.sh <VERSION> <EDDSA_SIGNATURE> <ZIP_FILE>
+# Called by:
+#   - CI (.github/workflows/release.yml, "Update appcast" step) after the ZIP
+#     has been signed with sign_update and the EdDSA signature is available.
+#   - Can be run locally if manually re-generating the appcast entry.
 #
-# VERSION           Marketing version (e.g. 1.2.0)
-# EDDSA_SIGNATURE   Output of: vendor/Sparkle/bin/sign_update <zip> --ed-key <key>
-# ZIP_FILE          Path to the release ZIP
+# What it does:
+#   1. Reads the ZIP file size for the <enclosure length="..."> attribute
+#   2. Computes the current UTC date for <pubDate>
+#   3. Constructs a full Sparkle <item> XML block with version, download URL,
+#      EdDSA signature, file size, and minimum system version
+#   4. Inserts the new <item> block immediately before </channel> in appcast.xml
+#      (so newest releases appear first in the feed)
+#
+# Usage:
+#   ./scripts/update_appcast.sh <VERSION> <EDDSA_SIGNATURE> <ZIP_FILE>
+#
+#   VERSION          Marketing version (e.g. 1.2.0)
+#   EDDSA_SIGNATURE  Output of: sign_update --ed-key-file <key> -p <zip>
+#   ZIP_FILE         Path to the release ZIP (used for file size)
+#
+# Output: docs/appcast.xml updated in-place
+# =============================================================================
 
 VERSION="${1:?Missing VERSION}"
 SIGNATURE="${2:?Missing EDDSA_SIGNATURE}"

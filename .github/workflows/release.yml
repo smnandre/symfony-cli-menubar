@@ -108,6 +108,7 @@ jobs:
 
       - name: Build and package
         env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
           SPARKLE_PUBLIC_KEY: ${{ secrets.SPARKLE_PUBLIC_KEY }}
         run: |
           chmod +x ./scripts/package.sh
@@ -218,30 +219,38 @@ jobs:
             echo "Skipping appcast update (no Sparkle signature)"
           fi
 
-      - name: Update website version
+      - name: Commit updated appcast and version files
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout main
+
+          # Sync version.env with the tag
+          printf 'MARKETING_VERSION=%s\nBUILD_NUMBER=1\n' "$VERSION" > config/version.env
+
+          # Update website download URL and version badge
           DMG_URL="https://github.com/smnandre/symfony-cli-menubar/releases/download/v${VERSION}/SymfonyCLIMenuBar-${VERSION}.dmg"
           sed -i '' "s/\"softwareVersion\": \"[^\"]*\"/\"softwareVersion\": \"${VERSION}\"/" docs/web/index.html
-          sed -i '' "s|<strong>v[^<]*</strong>|<strong>v${VERSION}</strong>|" docs/web/index.html
           sed -i '' "s|\"downloadUrl\": \"[^\"]*\"|\"downloadUrl\": \"${DMG_URL}\"|" docs/web/index.html
+          sed -i '' "s|<strong>v[^<]*</strong>|<strong>v${VERSION}</strong>|" docs/web/index.html
           sed -i '' '/btn--primary/s|href="[^"]*"|href="'"${DMG_URL}"'"|' docs/web/index.html
 
-      - name: Commit updated appcast and website
-        env:
-          VERSION: ${{ steps.version.outputs.VERSION }}
-        run: |
-          if [ -n "$SPARKLE_SIGNATURE" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git fetch origin main
-            git checkout main
-            git add docs/appcast.xml docs/web/index.html
-            git diff --staged --quiet && echo "No changes to commit" || \
-              git commit -m "chore: update appcast and website for v${VERSION}"
-            git push origin main
+          # Promote [Unreleased] to [VERSION] in CHANGELOG.md if not already done
+          TODAY=$(date +%Y-%m-%d)
+          if grep -q "## \[Unreleased\]" CHANGELOG.md; then
+            awk -v ver="${VERSION}" -v date="${TODAY}" '
+              /^## \[Unreleased\]$/ && !done { print; print ""; print "## [" ver "] - " date; done=1; next }
+              { print }
+            ' CHANGELOG.md > CHANGELOG.md.tmp && mv CHANGELOG.md.tmp CHANGELOG.md
           fi
+
+          git add config/version.env docs/web/index.html docs/appcast.xml CHANGELOG.md
+          git diff --staged --quiet && echo "No changes to commit" || \
+            git commit -m "chore: release v${VERSION}"
+          git push origin main
 
       - name: Generate checksums
         env:

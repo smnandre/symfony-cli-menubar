@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `scripts/bump-version.sh` — optional local tool to preview version bump before tagging
+- `.github/README.md` — index of workflows, scripts, and config files
+
+### Changed
+- Release pipeline fully automated on tag push: syncs `version.env`, `CHANGELOG.md`, `docs/web/index.html`, `appcast.xml` and commits back to `main`
+- `scripts/package.sh` now uses `VERSION` env var from the git tag, fixing version shown in About screen
+- Docblocks added to all scripts documenting purpose, callers, and arguments
+
+### Removed
+- `scripts/notarize.sh` — dead code, notarization is handled inline in `release.yml`
+
 ## [0.9.6] - 2026-03-29
 ### Fixed
 - Sign all Sparkle nested executables (Updater.app, Autoupdate, framework XPC services) for notarization

@@ -1,13 +1,10 @@
 # Symfony CLI Menu Bar
 
-> A native macOS menu bar app that brings the power of the [Symfony CLI](https://github.com/symfony-cli/symfony-cli) to
-> your fingertips.
+> A native macOS menu bar app for managing local [Symfony CLI](https://github.com/symfony-cli/symfony-cli) servers.
 
 ![Symfony CLI Menu Bar](assets/symfony-cli-menubar.banner.jpg)
 
-Symfony CLI Menu Bar brings your local development environment directly to your menu bar. Instantly access, start, and
-stop your Symfony servers, open them in your browser, view logs, and manage PHP versions or proxy domains, all with a
-single click, without breaking your workflow.
+Access, start, and stop your local Symfony servers from the menu bar. Open them in your browser, view logs, manage PHP versions and proxy domains — without leaving your current context.
 
 ## Features
 
@@ -52,7 +49,7 @@ See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for development guidelines.
 
 ## Thanks
 
-Symfony CLI Menu Bar stands on the shoulders of remarkable open source work.
+Symfony CLI Menu Bar builds on top of remarkable open source work.
 
 **[Symfony](https://symfony.com)**: the PHP framework this whole ecosystem is built on.
 Fabien Potencier [@fabpot](https://github.com/fabpot) and the Symfony contributors.

@@ -1,80 +1,84 @@
 # Release Process
 
-This project uses a professional two-phase release workflow: **Prepare** (via Pull Request) and **Release** (via Git Tag).
+## TL;DR
+
+```bash
+git tag v1.0.1 && git push origin v1.0.1
+```
+
+That's it. CI handles everything else automatically.
 
 ---
 
-## Phase 1: Prepare (The Pull Request)
+## What CI does on tag push
 
-Before releasing a new version, you must prepare the codebase on a dedicated branch and merge it into `main`.
-
-1.  **Create a Release Branch:**
-    ```bash
-    git checkout -b release/v1.0.0
-    ```
-2.  **Update the Version:**
-    Edit `config/version.env` and update the version and build number:
-    ```
-    MARKETING_VERSION=1.0.0
-    BUILD_NUMBER=1
-    ```
-3.  **Update the Changelog (`CHANGELOG.md`):**
-    - Rename the `## [Unreleased]` section to `## [1.0.0] - YYYY-MM-DD`.
-    - Create a new empty `## [Unreleased]` section at the top.
-    - Ensure all notable changes are correctly categorized (Added, Changed, Fixed).
-4.  **Open a Pull Request:**
-    - Title: `Release v1.0.0`
-    - Verify that all CI checks (tests, build) pass on the PR.
-5.  **Merge into `main`:**
-    Once verified, merge the PR into the `main` branch.
+| Step | What happens |
+|------|-------------|
+| Validate secrets | Fails fast if any required secret is missing |
+| Run tests | `swift test` |
+| Build | Universal binary (arm64 + x86_64) via `swift build` |
+| Sign | Developer ID Application certificate, hardened runtime, entitlements |
+| Embed Sparkle | Copies framework, signs all XPC services inside-out |
+| Create DMG | `scripts/create-dmg.sh` — signed and notarized |
+| Notarize | Submits to Apple, waits for `Accepted`, staples ticket to DMG and `.app` |
+| Create ZIP | For Sparkle in-app updates, signed with EdDSA (`sign_update`) |
+| Update `CHANGELOG.md` | Promotes `[Unreleased]` → `[1.0.1] - YYYY-MM-DD` (if not already done) |
+| Update `config/version.env` | Syncs `MARKETING_VERSION` to the tag version |
+| Update `docs/web/index.html` | Version badge and download URL |
+| Update `docs/appcast.xml` | Prepends new Sparkle feed entry with EdDSA signature |
+| Commit back to `main` | Single commit: `chore: release v1.0.1` |
+| Create GitHub Release | Uploads DMG, ZIP, and SHA256 checksums |
 
 ---
 
-## Phase 2: Release (The Tag)
+## Recommended: write release notes before tagging
 
-The actual release is triggered by pushing a version tag to the `main` branch.
+CI auto-creates the `[1.0.1]` section in `CHANGELOG.md`, but cannot write the release notes for you. Add them before tagging:
 
-1.  **Sync Local Main:**
-    ```bash
-    git checkout main
-    git pull origin main
-    ```
-2.  **Create and Push Tag:**
-    ```bash
-    git tag v1.0.0
-    git push origin v1.0.0
-    ```
-3.  **Automation Pipeline:**
-    Pushing the tag triggers the `release.yml` workflow, which performs the following:
-    - **Validation:** Runs a "Pre-flight Check" to ensure all signing secrets are present.
-    - **Build & Sign:** Compiles the universal app, signs it with your Developer ID, and embeds Sparkle.
-    - **Notarize:** Submits the app to Apple for notarization and staples the ticket.
-    - **Package:** Creates a DMG and a ZIP for updates.
-    - **Distribute:** Creates a GitHub Release, uploads all assets, and updates the website/appcast.
+```bash
+# edit CHANGELOG.md — add notes under [Unreleased]
+git add CHANGELOG.md
+git commit -m "chore: release notes for v1.0.1"
+git push
+```
 
----
+Then tag:
 
-## Silent Releases (Pre-releases)
+```bash
+git tag v1.0.1 && git push origin v1.0.1
+```
 
-If you want to release a version without marking it as the "Latest Release" (e.g., for beta testing or internal use):
+### Optional: preview all file changes locally first
 
-1.  Use a tag with a suffix: `v1.0.0-beta.1` or `v1.0.0-rc.1`.
-2.  The workflow will automatically detect the suffix and mark the GitHub Release as a **"Pre-release"**.
-3.  Users will not be automatically updated to this version unless their Sparkle configuration allows beta updates.
+```bash
+bash scripts/bump-version.sh 1.0.1
+```
+
+Updates `config/version.env`, `CHANGELOG.md`, and `docs/web/index.html` locally so you can review the diff before pushing the tag. CI will skip any file already up to date.
 
 ---
 
-## Required Secrets
+## Pre-releases
 
-The following secrets must be configured in your GitHub repository settings:
+Use a tag suffix: `v1.0.0-beta.1` or `v1.0.0-rc.1`.
+
+The workflow auto-detects the suffix and marks the GitHub Release as **Pre-release**. Sparkle will not offer pre-release versions to users on the stable channel.
+
+---
+
+## Required secrets
+
+Configure these in **GitHub → Settings → Secrets → Actions**:
 
 | Secret | Purpose |
-|---|---|
-| `APPLE_DEVELOPER_ID_P12` | Base64-encoded Developer ID Application certificate (.p12) |
-| `APPLE_DEVELOPER_ID_PASSWORD` | Password for the .p12 file |
+|--------|---------|
+| `APPLE_DEVELOPER_ID_P12` | Base64-encoded Developer ID Application certificate (`.p12`) |
+| `APPLE_DEVELOPER_ID_PASSWORD` | Password for the `.p12` file |
 | `APPLE_ID` | Apple ID used for notarization |
 | `APPLE_NOTARIZATION_PASSWORD` | App-specific password for notarization |
-| `APPLE_TEAM_ID` | Apple Developer Team ID |
-| `SPARKLE_PRIVATE_KEY` | EdDSA private key used to sign the ZIP for Sparkle |
+| `APPLE_TEAM_ID` | 10-character Apple Developer Team ID |
+| `SPARKLE_PRIVATE_KEY` | EdDSA private key for signing ZIP updates |
+| `SPARKLE_PUBLIC_KEY` | EdDSA public key embedded in `Info.plist` as `SUPublicEDKey` |
 
-The `SPARKLE_PUBLIC_KEY` is also required but is typically managed via script configuration.
+See `.github/SIGNING.md` for how to generate and configure these.
+

@@ -54,5 +54,17 @@
                 type="application/octet-stream" />
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
         </item>
+        <item>
+            <title>Version 0.10.3</title>
+            <pubDate>Tue, 31 Mar 2026 21:36:00 +0000</pubDate>
+            <enclosure
+                url="https://github.com/smnandre/symfony-cli-menubar/releases/download/v0.10.3/SymfonyCLIMenuBar-0.10.3.zip"
+                sparkle:version="1"
+                sparkle:shortVersionString="0.10.3"
+                sparkle:edSignature="KYyne23VbpWiewrLvv7H4loA6dDLzkbrUljgN5E/d0Rn6FL0y8tybLwZloLq53bfQ7vALOsEFTEvBweEnB1yDQ=="
+                length="3235513"
+                type="application/octet-stream" />
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+        </item>
     </channel>
 </rss>

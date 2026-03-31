@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.3] - 2026-03-31
+
 ### Added
 - `scripts/bump-version.sh` — optional local tool to preview version bump before tagging
 - `.github/README.md` — index of workflows, scripts, and config files

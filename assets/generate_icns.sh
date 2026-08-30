@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 # Icon generation script for SymfonyCLIMenuBar
 # Run this on macOS with librsvg or Inkscape installed
 
@@ -14,9 +16,6 @@ if command -v rsvg-convert &> /dev/null; then
     CONVERTER="rsvg"
 elif command -v inkscape &> /dev/null; then
     CONVERTER="inkscape"
-elif command -v sips &> /dev/null; then
-    echo "Note: sips can only resize, not convert SVG. Using alternate method..."
-    CONVERTER="sips"
 else
     echo "Error: No suitable converter found. Install librsvg or inkscape."
     exit 1
@@ -27,9 +26,9 @@ convert_svg() {
     local output=$2
 
     if [ "$CONVERTER" = "rsvg" ]; then
-        rsvg-convert -w $size -h $size "$SVG" -o "$output"
+        rsvg-convert -w "$size" -h "$size" "$SVG" -o "$output"
     elif [ "$CONVERTER" = "inkscape" ]; then
-        inkscape -w $size -h $size "$SVG" -o "$output" 2>/dev/null
+        inkscape -w "$size" -h "$size" "$SVG" -o "$output" 2>/dev/null
     fi
 }
 
@@ -50,9 +49,10 @@ echo "Creating .icns file..."
 iconutil -c icns "$ICONSET_DIR" -o "$ASSETS_DIR/AppIcon.icns"
 
 if [ -f "$ASSETS_DIR/AppIcon.icns" ]; then
-    echo "✓ Created AppIcon.icns successfully!"
+    echo "Created AppIcon.icns successfully"
     echo "  Copy it to your app bundle:"
     echo "  cp assets/AppIcon.icns SymfonyCLIMenuBar.app/Contents/Resources/"
 else
-    echo "✗ Failed to create .icns file"
+    echo "ERROR: Failed to create .icns file"
+    exit 1
 fi

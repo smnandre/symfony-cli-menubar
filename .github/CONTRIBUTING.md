@@ -42,7 +42,7 @@ Be respectful, constructive, and professional in all interactions.
    ```bash
    swift build
    swift test
-   ./scripts/package.sh
+   VERSION=0.0.0 SIGNING_MODE=adhoc ./scripts/package.sh
    open SymfonyCLIMenuBar.app
    ```
 
@@ -66,7 +66,7 @@ Be respectful, constructive, and professional in all interactions.
 ### Requirements
 
 - macOS 14.0 (Sonoma) or later
-- Xcode 15+ with Swift 5.9+
+- Xcode 26+ with Swift 6.2+
 - [Symfony CLI](https://symfony.com/download) for testing
 - Homebrew (for icon generation)
 
@@ -77,9 +77,8 @@ Be respectful, constructive, and professional in all interactions.
 git clone https://github.com/YOUR_USERNAME/symfony-cli-menubar.git
 cd symfony-cli-menubar
 
-# Build
-swift build -c release
-./scripts/package.sh
+# Build and package
+VERSION=0.0.0 SIGNING_MODE=adhoc ./scripts/package.sh
 
 # Run
 open SymfonyCLIMenuBar.app
@@ -91,14 +90,15 @@ open SymfonyCLIMenuBar.app
 SymfonyCLIMenuBar/
 ├── Sources/
 │   ├── SymfonyCLIMenuBarApp.swift   # App entry, AppDelegate, About window
-│   ├── SymfonyServerManager.swift  # Symfony CLI integration, state management
-│   └── MenuBuilder.swift           # Menu construction, actions, UI
+│   ├── SymfonyServerManager.swift   # Symfony CLI integration and state
+│   ├── UpdateChecker.swift          # Published Homebrew cask comparison
+│   └── MenuBuilder.swift            # Menu construction and actions
 ├── scripts/
-│   ├── bump-version.sh             # Optional local version bump preview
-│   ├── package.sh                  # Build, bundle, and sign the .app
-│   ├── embed_sparkle.sh            # Sparkle framework embedding & signing
-│   ├── create-dmg.sh              # DMG packaging for distribution
-│   └── update_appcast.sh          # Sparkle appcast feed update
+│   ├── bump-version.sh              # Optional local version bump preview
+│   ├── package.sh                   # Build, bundle, and sign the .app
+│   ├── create-dmg.sh                # DMG packaging for distribution
+│   ├── render_homebrew_cask.sh      # Render release cask metadata
+│   └── finalize-release-site.sh     # Publish site metadata after cask merge
 ├── .github/workflows/
 │   ├── build.yml                  # CI for PRs and commits
 │   └── release.yml                # Release automation on tags

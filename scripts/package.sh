@@ -2,27 +2,25 @@
 set -euo pipefail
 
 # =============================================================================
-# package.sh — Build, bundle, and sign the SymfonyCLIMenuBar application
+# package.sh - Build, bundle, and sign the SymfonyCLIMenuBar application
 # =============================================================================
 #
 # Called by:
 #   - CI (.github/workflows/release.yml, "Build and package" step) on every
 #     tag push, with SIGNING_MODE=developer and VERSION set from the git tag.
-#   - Developers locally for test builds: ./scripts/package.sh [release|debug]
+#   - Developers locally for test builds: VERSION=0.0.0 ./scripts/package.sh [release|debug]
 #
 # What it does:
-#   1. Reads version from config/version.env (overridden by VERSION env var in CI)
+#   1. Validates the VERSION supplied by the caller
 #   2. Compiles the Swift target for each architecture (arm64, x86_64, or host)
 #   3. Lipo-merges multi-arch binaries into a universal binary if needed
 #   4. Assembles the .app bundle (binary, Info.plist, PkgInfo, resources, icon)
-#   5. Embeds Sparkle.framework + XPC services via scripts/embed_sparkle.sh
-#   6. Code-signs the bundle (ad-hoc locally, Developer ID in CI)
+#   5. Code-signs the bundle (ad-hoc locally, Developer ID in CI)
 #
-# Environment variables (CI sets these; sane defaults for local use):
-#   VERSION         Git tag version (e.g. 1.2.0) — overrides config/version.env
+# Environment variables:
+#   VERSION         Required stable version (e.g. 1.2.0)
 #   SIGNING_MODE    "developer" or "adhoc" (default: developer)
 #   APP_IDENTITY    Signing identity string from Keychain
-#   SPARKLE_PUBLIC_KEY  EdDSA public key embedded in Info.plist (SUPublicEDKey)
 #   ARCHES          Space-separated list of target architectures (default: host arch)
 #
 # Output: SymfonyCLIMenuBar.app in the repository root
@@ -33,45 +31,36 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT"
 
 # --- App Configuration ---
-# TODO: Review and update these values as needed.
 APP_NAME="SymfonyCLIMenuBar"
 APP_DISPLAY_NAME="Symfony CLI MenuBar"
-BUNDLE_ID="com.simonandre.SymfonyCLIMenuBar"
+BUNDLE_ID="dev.smnandre.symfony-cli-menubar"
 MACOS_MIN_VERSION="14.0"
 MENU_BAR_APP="1" # Set to 1 for menu bar apps to set LSUIElement=true
 
 # --- Signing Configuration ---
-# TODO: Review and update these values as needed.
-# By default, uses ad-hoc signing. For distribution, set SIGNING_MODE to "developer"
-# and APP_IDENTITY to your "Developer ID Application: Your Name (TEAMID)" identity.
+# By default, uses the maintainer's Developer ID identity for stable local
+# permissions. Contributors without that identity can set SIGNING_MODE=adhoc.
 # You can find your identity with: security find-identity -v -p codesigning
 SIGNING_MODE=${SIGNING_MODE:-"developer"} # "adhoc" or "developer"
-APP_IDENTITY=${APP_IDENTITY:-"Apple Development: Simon André (F8726C7K8M)"} # e.g., "Developer ID Application: Your Name (TEAMID)"
+APP_IDENTITY=${APP_IDENTITY:-"Developer ID Application: Simon André (3D8DYUPC57)"}
 
-
-# Sparkle public key — set once after running: vendor/Sparkle/bin/generate_keys
-# The corresponding private key must be stored in SPARKLE_PRIVATE_KEY (GitHub secret).
-SPARKLE_PUBLIC_KEY="${SPARKLE_PUBLIC_KEY:-}"
-SPARKLE_FEED_URL="${SPARKLE_FEED_URL:-https://smnandre.github.io/symfony-cli-menubar/appcast.xml}"
-
-# Load version info from config/version.env
-if [[ -f "$ROOT/config/version.env" ]]; then
-  source "$ROOT/config/version.env"
-else
-  echo "config/version.env not found. Using default version numbers."
-  MARKETING_VERSION=${MARKETING_VERSION:-1.0.0}
-  BUILD_NUMBER=${BUILD_NUMBER:-1}
+if [[ -z "${VERSION:-}" ]]; then
+  echo "ERROR: VERSION is required (for example, VERSION=1.0.0)" >&2
+  exit 1
 fi
 
-# Allow CI to override via environment (e.g. VERSION=0.11.0 from the git tag)
-if [[ -n "${VERSION:-}" ]]; then
-  MARKETING_VERSION="$VERSION"
+if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "ERROR: VERSION must be a stable X.Y.Z version" >&2
+  exit 1
 fi
 
-echo " MBuilding $APP_NAME v$MARKETING_VERSION ($BUILD_NUMBER) for $CONF..."
+echo "Building $APP_NAME v$VERSION for $CONF..."
 
 # --- Build ---
-ARCH_LIST=( ${ARCHES:-} )
+ARCH_LIST=()
+if [[ -n "${ARCHES:-}" ]]; then
+  read -r -a ARCH_LIST <<< "$ARCHES"
+fi
 if [[ ${#ARCH_LIST[@]} -eq 0 ]]; then
   HOST_ARCH=$(uname -m)
   ARCH_LIST=("$HOST_ARCH")
@@ -84,10 +73,10 @@ done
 
 # --- Packaging ---
 APP_BUNDLE="$ROOT/${APP_NAME}.app"
-echo "📦 Packaging into $APP_BUNDLE..."
+echo "Packaging into $APP_BUNDLE..."
 
 rm -rf "$APP_BUNDLE"
-mkdir -p "$APP_BUNDLE/Contents/MacOS" "$APP_BUNDLE/Contents/Resources" "$APP_BUNDLE/Contents/Frameworks"
+mkdir -p "$APP_BUNDLE/Contents/MacOS" "$APP_BUNDLE/Contents/Resources"
 
 # --- Info.plist ---
 LSUI_VALUE="false"
@@ -104,13 +93,13 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleName</key><string>Symfony CLI MenuBar</string>
-    <key>CFBundleDisplayName</key><string>Symfony CLI MenuBar</string>
+    <key>CFBundleName</key><string>${APP_DISPLAY_NAME}</string>
+    <key>CFBundleDisplayName</key><string>${APP_DISPLAY_NAME}</string>
     <key>CFBundleIdentifier</key><string>${BUNDLE_ID}</string>
     <key>CFBundleExecutable</key><string>${APP_NAME}</string>
     <key>CFBundlePackageType</key><string>APPL</string>
-    <key>CFBundleShortVersionString</key><string>${MARKETING_VERSION}</string>
-    <key>CFBundleVersion</key><string>${BUILD_NUMBER}</string>
+    <key>CFBundleShortVersionString</key><string>${VERSION}</string>
+    <key>CFBundleVersion</key><string>${VERSION}</string>
     <key>LSMinimumSystemVersion</key><string>${MACOS_MIN_VERSION}</string>
     <key>LSUIElement</key><${LSUI_VALUE}/>
     <key>CFBundleIconFile</key><string>AppIcon</string>
@@ -119,9 +108,6 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
     <key>NSAppleEventsUsageDescription</key><string>Symfony CLI MenuBar needs permission to open Terminal for viewing logs and running commands.</string>
     <key>BuildTimestamp</key><string>${BUILD_TIMESTAMP}</string>
     <key>GitCommit</key><string>${GIT_COMMIT}</string>
-    <key>SUFeedURL</key><string>${SPARKLE_FEED_URL}</string>
-    <key>SUPublicEDKey</key><string>${SPARKLE_PUBLIC_KEY}</string>
-    <key>SUEnableAutomaticChecks</key><true/>
 </dict>
 </plist>
 PLIST
@@ -166,7 +152,7 @@ install_binary "$APP_NAME" "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 # Copy main app icon
 if [ -f "assets/AppIcon.icns" ]; then
     cp assets/AppIcon.icns "$APP_BUNDLE/Contents/Resources/"
-    echo "🎨 App icon installed"
+    echo "App icon installed"
 fi
 
 # Bundle app resources from Sources directory (if any)
@@ -175,57 +161,42 @@ if [[ -d "$APP_RESOURCES_DIR" ]]; then
   cp -R "$APP_RESOURCES_DIR/." "$APP_BUNDLE/Contents/Resources/"
 fi
 
-# --- Embed Sparkle ---
-echo "Embedding Sparkle..."
-chmod +x "$ROOT/scripts/embed_sparkle.sh"
-if [[ "$SIGNING_MODE" == "developer" && -n "$APP_IDENTITY" ]]; then
-    "$ROOT/scripts/embed_sparkle.sh" "$APP_BUNDLE" "$APP_IDENTITY"
-else
-    "$ROOT/scripts/embed_sparkle.sh" "$APP_BUNDLE"
-fi
-
 # --- Code Signing ---
-echo "🖋️ Signing application..."
+echo "Signing application..."
 
 ENTITLEMENTS_PATH="$ROOT/config/entitlements.plist"
 if [[ ! -f "$ENTITLEMENTS_PATH" ]]; then
-  echo "Creating default entitlements file at $ENTITLEMENTS_PATH"
-  mkdir -p "$ROOT/config"
-  cat > "$ENTITLEMENTS_PATH" <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>com.apple.security.app-sandbox</key>
-    <true/>
-    <key>com.apple.security.inherit</key>
-    <true/>
-</dict>
-</plist>
-PLIST
+  echo "ERROR: Entitlements file not found at $ENTITLEMENTS_PATH" >&2
+  exit 1
 fi
 
-if [[ "$SIGNING_MODE" == "adhoc" || -z "$APP_IDENTITY" ]]; then
-  CODESIGN_ARGS=(--force --sign "-")
-  echo "Using ad-hoc signing. App will not be notarized."
-else
-  CODESIGN_ARGS=(--force --timestamp --options runtime --sign "$APP_IDENTITY")
-  echo "Using developer identity: $APP_IDENTITY"
-fi
+case "$SIGNING_MODE" in
+  adhoc)
+    CODESIGN_ARGS=(--force --sign "-")
+    echo "Using ad hoc signing. App will not be notarized."
+    ;;
+  developer)
+    if [[ -z "$APP_IDENTITY" ]]; then
+      echo "ERROR: APP_IDENTITY is required for developer signing" >&2
+      exit 1
+    fi
+    CODESIGN_ARGS=(--force --timestamp --options runtime --sign "$APP_IDENTITY")
+    echo "Using developer identity: $APP_IDENTITY"
+    ;;
+  *)
+    echo "ERROR: SIGNING_MODE must be 'adhoc' or 'developer'" >&2
+    exit 1
+    ;;
+esac
 
 # Strip extended attributes before signing
 xattr -cr "$APP_BUNDLE"
 
-# Sign main binary with entitlements first
-echo "🖋️ Signing main executable..."
-codesign "${CODESIGN_ARGS[@]}" \
-  --entitlements "$ENTITLEMENTS_PATH" \
-  "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
-
-# Sign bundle
-echo "🖋️ Signing bundle..."
+# Sign the final bundle once so its executable, metadata, and entitlements share
+# one sealed code requirement.
+echo "Signing bundle..."
 codesign "${CODESIGN_ARGS[@]}" \
   --entitlements "$ENTITLEMENTS_PATH" \
   "$APP_BUNDLE"
 
-echo "✅ Packaging complete: $APP_BUNDLE"
+echo "Packaging complete: $APP_BUNDLE"

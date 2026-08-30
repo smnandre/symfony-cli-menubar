@@ -32,7 +32,7 @@ sed -i '' "s|\"downloadUrl\": \"[^\"]*\"|\"downloadUrl\": \"${DMG_URL}\"|" "$WEB
 sed -i '' "s|<strong>v[^<]*</strong>|<strong>v${VERSION}</strong>|" "$WEB_INDEX"
 sed -i '' '/btn--primary/s|href="[^"]*"|href="https://github.com/smnandre/symfony-cli-menubar#installation"|' "$WEB_INDEX"
 sed -i '' '/btn--primary/s|title="[^"]*"|title="Install Symfony CLI Menu Bar with Homebrew"|' "$WEB_INDEX"
-sed -i '' 's/>Download for macOS</>Install with Homebrew</' "$WEB_INDEX"
-sed -i '' 's/>macOS 14+</>Apple Silicon - macOS 14+</' "$WEB_INDEX"
+sed -i '' '/^[[:space:]]*Download for macOS[[:space:]]*$/s/Download for macOS/Install with Homebrew/' "$WEB_INDEX"
+sed -i '' '/^[[:space:]]*macOS 14+[[:space:]]*$/s/macOS 14+/Apple Silicon - macOS 14+/' "$WEB_INDEX"
 
 echo "Updated docs/web/index.html for v${VERSION}"

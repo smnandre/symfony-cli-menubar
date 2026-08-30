@@ -34,7 +34,7 @@ jobs:
           if [ "$MISSING" -eq 1 ]; then exit 1; fi
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
@@ -52,7 +52,11 @@ jobs:
           echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Install release tools
-        run: brew install librsvg shellcheck yamllint
+        run: |
+          if brew tap | grep -qx 'aws/tap'; then
+            brew untap aws/tap
+          fi
+          brew install librsvg shellcheck yamllint
 
       - name: Run quality checks
         run: |

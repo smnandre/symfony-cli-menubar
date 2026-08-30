@@ -56,7 +56,7 @@ jobs:
           if brew tap | grep -qx 'aws/tap'; then
             brew untap aws/tap
           fi
-          brew install librsvg shellcheck yamllint
+          brew install librsvg shellcheck swift-format yamllint
 
       - name: Run quality checks
         run: |

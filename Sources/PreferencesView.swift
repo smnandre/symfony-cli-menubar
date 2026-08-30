@@ -5,26 +5,26 @@
 // "Symfony" is a registered trademark of Symfony SAS, used with kind permission.
 // This app is not affiliated with or endorsed by Symfony SAS or SensioLabs.
 
-import SwiftUI
 import ServiceManagement
+import SwiftUI
 
 struct PreferencesView: View {
     @ObservedObject var serverManager: SymfonyServerManager
     @State private var startAtLogin: Bool = false
-    @AppStorage("RefreshInterval")         private var refreshInterval:    Double = 10.0
+    @AppStorage("RefreshInterval") private var refreshInterval: Double = 10.0
     @AppStorage("MaxStoppedServersToShow") private var maxStoppedServers: Double = 3.0
-    @AppStorage("MaxProxiesToShow")        private var maxProxies:        Double = 2.0
-    @AppStorage("ShowPHPVersions")         private var showPHPVersions:    Bool   = true
-    @AppStorage("ShowProxies")             private var showProxies:        Bool   = true
-    @AppStorage("ShowServers")             private var showServers:        Bool   = true
+    @AppStorage("MaxProxiesToShow") private var maxProxies: Double = 2.0
+    @AppStorage("ShowPHPVersions") private var showPHPVersions: Bool = true
+    @AppStorage("ShowProxies") private var showProxies: Bool = true
+    @AppStorage("ShowServers") private var showServers: Bool = true
 
     // MARK: - Layout constants
 
-    private let hPad:          CGFloat = 20
-    private let sectionGap:    CGFloat = 20
-    private let switchScale:   CGFloat = 0.72
-    private let sliderLabel:   CGFloat = 100   // fixed: all sliders start at same x
-    private let sliderValue:   CGFloat = 46    // fixed: all values end at same x
+    private let hPad: CGFloat = 20
+    private let sectionGap: CGFloat = 20
+    private let switchScale: CGFloat = 0.72
+    private let sliderLabel: CGFloat = 100  // fixed: all sliders start at same x
+    private let sliderValue: CGFloat = 46  // fixed: all values end at same x
 
     var body: some View {
         ScrollView {
@@ -69,12 +69,12 @@ struct PreferencesView: View {
         .onAppear {
             startAtLogin = SMAppService.mainApp.status == .enabled
         }
-        .onChange(of: refreshInterval)    { _, _ in NotificationCenter.default.post(name: Prefs.didChange, object: nil) }
-        .onChange(of: maxStoppedServers)  { _, _ in NotificationCenter.default.post(name: Prefs.didChange, object: nil) }
-        .onChange(of: maxProxies)         { _, _ in NotificationCenter.default.post(name: Prefs.didChange, object: nil) }
-        .onChange(of: showPHPVersions)    { _, _ in NotificationCenter.default.post(name: Prefs.didChange, object: nil) }
-        .onChange(of: showProxies)        { _, _ in NotificationCenter.default.post(name: Prefs.didChange, object: nil) }
-        .onChange(of: showServers)        { _, _ in NotificationCenter.default.post(name: Prefs.didChange, object: nil) }
+        .onChange(of: refreshInterval) { _, _ in NotificationCenter.default.post(name: Prefs.didChange, object: nil) }
+        .onChange(of: maxStoppedServers) { _, _ in NotificationCenter.default.post(name: Prefs.didChange, object: nil) }
+        .onChange(of: maxProxies) { _, _ in NotificationCenter.default.post(name: Prefs.didChange, object: nil) }
+        .onChange(of: showPHPVersions) { _, _ in NotificationCenter.default.post(name: Prefs.didChange, object: nil) }
+        .onChange(of: showProxies) { _, _ in NotificationCenter.default.post(name: Prefs.didChange, object: nil) }
+        .onChange(of: showServers) { _, _ in NotificationCenter.default.post(name: Prefs.didChange, object: nil) }
     }
 
     // MARK: - Row Builders
@@ -118,7 +118,9 @@ struct PreferencesView: View {
     }
 
     @ViewBuilder
-    private func sliderRow(_ label: String, value: Binding<Double>, in range: ClosedRange<Double>, step: Double = 1, unit: String = "") -> some View {
+    private func sliderRow(_ label: String, value: Binding<Double>, in range: ClosedRange<Double>, step: Double = 1, unit: String = "")
+        -> some View
+    {
         HStack(spacing: 8) {
             Text(label)
                 .font(.system(size: 13))

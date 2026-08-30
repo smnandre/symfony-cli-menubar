@@ -11,7 +11,7 @@ Symfony CLI Menu Bar is a native macOS menu bar application that provides a grap
 - **Language**: Swift 5.9+
 - **Framework**: AppKit (native macOS)
 - **Build System**: Swift Package Manager
-- **Minimum macOS**: 13.0 (Ventura)
+- **Minimum macOS**: 14.0 (Sonoma)
 - **Dependencies**: None (uses only system frameworks)
 
 ## Architecture Pattern
@@ -32,6 +32,7 @@ The app follows a simple **MVC-like pattern** with clear separation of concerns:
 │  - Menu lifecycle                        │
 │  - About window                          │
 │  - Login items                           │
+│  - Release update checks                 │
 └──────────────┬──────────────────────────┘
                │
       ┌────────┴────────┐
@@ -66,6 +67,7 @@ The app follows a simple **MVC-like pattern** with clear separation of concerns:
 - Manages menu lifecycle (open/close/refresh)
 - Handles "Start at Login" via `ServiceManagement`
 - Shows About window
+- Runs the user-initiated release update check
 - Coordinates between MenuBuilder and ServerManager
 
 **Design Decision**: Using `NSApplicationDelegate` instead of pure SwiftUI because:
@@ -113,6 +115,16 @@ User Action → MenuBuilder → ServerManager → Symfony CLI
 - **Wrapper Classes**: `NSMenuItem.representedObject` needs `NSObject`
 - **Visual Design**: Status dots, icons, fonts
 
+### 5. UpdateChecker
+
+**Responsibility**: Lightweight release comparison
+
+- Requests the published cask from `smnandre/homebrew-tap` only when the user chooses **Check for Updates...**
+- Parses and compares semantic versions
+- Returns release data to `AppDelegate` for presentation
+- Does not download, install, or schedule updates
+- Accepts a local cask fixture in debug builds for end-to-end alert testing
+
 **Menu Structure**:
 ```
 Symfony CLI 5.12.0                [Header]
@@ -138,6 +150,7 @@ Symfony CLI 5.12.0                [Header]
 │  ├─ Start at Login
 │  └─ Refresh
 ├─ About
+├─ Check for Updates...
 └─ Quit
 ```
 
@@ -213,6 +226,12 @@ struct SymfonyProxy {
 - Register/unregister login item (macOS 13+)
 - Replaces deprecated Launch Services API
 
+**Homebrew cask source**:
+- Fetch the cask currently merged in `smnandre/homebrew-tap` for a user-initiated update check
+- Show the release page or copy `brew upgrade --cask symfony-cli-menubar`
+- No background or automatic network check
+- Debug builds may read `SYMFONY_CLI_MENUBAR_CASK_FIXTURE`; release builds always use the public cask
+
 ## Threading Model
 
 ```
@@ -260,12 +279,13 @@ Main Thread                Background Queue
 ### Permissions
 - **Terminal**: Requires Automation permission
 - **File System**: Read-only access to project directories
-- **Network**: None (app doesn't make network requests)
+- **Network**: User-initiated request to the published Homebrew cask on GitHub
 
 ### Code Signing
 - Required for distribution outside App Store
 - Notarization required for macOS 10.15+
-- Scripts provided (`scripts/notarize.sh`)
+- Release bundle identifier: `dev.smnandre.symfony-cli-menubar`
+- Release workflow verifies Developer ID signing and Apple notarization before publication
 
 ## Performance
 
@@ -298,12 +318,12 @@ Package.swift
 - Standard Swift tooling
 - Fast builds
 
-### Build Script (`build.sh`)
-1. Build with `swift build -c release`
-2. Create `.app` bundle structure
-3. Copy executable to `Contents/MacOS/`
-4. Copy `Info.plist` to `Contents/`
-5. Copy icon to `Contents/Resources/`
+### Packaging Script (`scripts/package.sh`)
+1. Validate the stable version supplied by the caller or release tag
+2. Build with Swift Package Manager for the requested architecture
+3. Create the `.app` bundle and write the version to both bundle version keys
+4. Copy the executable, metadata, resources, and icon
+5. Sign with Developer ID in CI or ad hoc locally
 
 ### CI/CD (GitHub Actions)
 1. **build.yml**: On every push/PR
@@ -314,8 +334,9 @@ Package.swift
 2. **release.yml**: On version tags
    - Build
    - Generate icon
-   - Create DMG and ZIP
-   - Publish GitHub release
+   - Sign and notarize the ARM-only DMG
+   - Publish the GitHub Release
+   - Open the Homebrew cask update pull request
 
 ## Design Decisions
 
@@ -328,7 +349,7 @@ Package.swift
 ### Why No Dependencies?
 - Simpler distribution
 - Faster builds
-- No security vulnerabilities from deps
+- Smaller third-party supply-chain surface
 - Standard library has everything we need
 
 ### Why Poll Every 10 Seconds?
@@ -376,6 +397,7 @@ Package.swift
 - PHP version switching
 - About window
 - Login items
+- Update check result and Homebrew command
 
 ## Resources
 

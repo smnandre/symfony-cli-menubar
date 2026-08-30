@@ -5,40 +5,55 @@
 // "Symfony" is a registered trademark of Symfony SAS, used with kind permission.
 // This app is not affiliated with or endorsed by Symfony SAS or SensioLabs.
 
-
-import SwiftUI
 import AppKit
-import ServiceManagement
 import OSLog
-import Sparkle
+import ServiceManagement
+import SwiftUI
 
 // MARK: - App Constants
 
 enum AppInfo {
     static let name = "Symfony CLI MenuBar"
+    static let bundleIdentifier = "dev.smnandre.symfony-cli-menubar"
     static let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "dev"
-    static let build   = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
+    static let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
     static let author = "Simon André"
     static let email = "smn.andre@gmail.com"
     static let githubURL = "https://github.com/smnandre/symfony-cli-menubar"
+    static let publishedCaskURL = URL(
+        string: "https://raw.githubusercontent.com/smnandre/homebrew-tap/main/Casks/symfony-cli-menubar.rb"
+    )!
+    static let homebrewUpgradeCommand = "brew upgrade --cask symfony-cli-menubar"
     static let twitterURL = "https://x.com/simonandre"
     static let websiteURL = "https://smnandre.dev"
     static let copyright = "© 2026 Simon André. All rights reserved."
     static let symfonyCliURL = "https://github.com/symfony-cli/symfony-cli"
+
+    static var updateCaskURL: URL {
+        #if DEBUG
+            if let fixturePath = ProcessInfo.processInfo.environment["SYMFONY_CLI_MENUBAR_CASK_FIXTURE"],
+                !fixturePath.isEmpty
+            {
+                return URL(fileURLWithPath: (fixturePath as NSString).expandingTildeInPath)
+            }
+        #endif
+
+        return publishedCaskURL
+    }
 }
 
 enum Prefs {
-    static let refreshInterval   = "RefreshInterval"
+    static let refreshInterval = "RefreshInterval"
     static let maxStoppedServers = "MaxStoppedServersToShow"
-    static let maxProxies        = "MaxProxiesToShow"
-    static let showPHPVersions   = "ShowPHPVersions"
-    static let showProxies       = "ShowProxies"
-    static let showServers       = "ShowServers"
+    static let maxProxies = "MaxProxiesToShow"
+    static let showPHPVersions = "ShowPHPVersions"
+    static let showProxies = "ShowProxies"
+    static let showServers = "ShowServers"
 
-    static let didChange = Notification.Name("com.simonandre.SymfonyCLIMenuBar.preferencesChanged")
+    static let didChange = Notification.Name("\(AppInfo.bundleIdentifier).preferencesChanged")
 }
 
-private let logger = Logger(subsystem: "com.simonandre.SymfonyCLIMenuBar", category: "App")
+private let logger = Logger(subsystem: AppInfo.bundleIdentifier, category: "App")
 
 @main
 struct SymfonyCLIMenuBarApp: App {
@@ -59,20 +74,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var timer: Timer?
     var aboutWindow: NSWindow?
     var preferencesWindow: NSWindow?
-    private var updaterController: SPUStandardUpdaterController!
+    private let updateChecker = UpdateChecker.live(caskURL: AppInfo.updateCaskURL)
+    private var updateTask: Task<Void, Never>?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         logger.info("SymfonyCLIMenuBar starting...")
 
-        NSApp.setActivationPolicy(.accessory)
-
-        let sparkleKey = (Bundle.main.infoDictionary?["SUPublicEDKey"] as? String) ?? ""
-        if !sparkleKey.isEmpty {
-            updaterController = SPUStandardUpdaterController(
-                startingUpdater: false, updaterDelegate: nil, userDriverDelegate: nil
-            )
-            try? updaterController.updater.start()
-        }
+        #if DEBUG
+            let checksUpdatesOnLaunch =
+                ProcessInfo.processInfo.environment["SYMFONY_CLI_MENUBAR_CHECK_UPDATES_ON_LAUNCH"] == "1"
+            NSApp.setActivationPolicy(checksUpdatesOnLaunch ? .regular : .accessory)
+        #else
+            NSApp.setActivationPolicy(.accessory)
+        #endif
 
         serverManager = SymfonyServerManager()
 
@@ -96,6 +110,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         startMonitoring()
 
         logger.info("SymfonyCLIMenuBar ready!")
+
+        #if DEBUG
+            if checksUpdatesOnLaunch {
+                DispatchQueue.main.async { [weak self] in
+                    self?.checkForUpdates()
+                }
+            }
+        #endif
     }
 
     func startMonitoring() {
@@ -151,6 +173,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        updateTask?.cancel()
+        updateTask = nil
         timer?.invalidate()
         timer = nil
     }
@@ -203,8 +227,63 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Update
 
-    @objc func checkForUpdates(_ sender: Any?) {
-        updaterController?.checkForUpdates(sender)
+    func checkForUpdates() {
+        updateTask?.cancel()
+        updateTask = Task { [weak self] in
+            guard let self else { return }
+
+            do {
+                let result = try await updateChecker.check(currentVersion: AppInfo.version)
+                guard !Task.isCancelled else { return }
+                showUpdateResult(result)
+            } catch is CancellationError {
+                return
+            } catch {
+                guard !Task.isCancelled else { return }
+                showUpdateError(error)
+            }
+        }
+    }
+
+    private func showUpdateResult(_ result: UpdateCheckResult) {
+        let presentation = UpdatePresentation(result: result, homebrewCommand: AppInfo.homebrewUpgradeCommand)
+
+        switch result {
+        case .updateAvailable(let release):
+            let alert = NSAlert()
+            alert.messageText = presentation.messageText
+            alert.informativeText = presentation.informativeText
+            alert.alertStyle = .informational
+            alert.addButton(withTitle: "Copy Command")
+            alert.addButton(withTitle: "View Release")
+            alert.addButton(withTitle: "Cancel")
+
+            switch alert.runModal() {
+            case .alertFirstButtonReturn:
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(AppInfo.homebrewUpgradeCommand, forType: .string)
+            case .alertSecondButtonReturn:
+                NSWorkspace.shared.open(release.releaseURL)
+            default:
+                break
+            }
+        case .upToDate:
+            let alert = NSAlert()
+            alert.messageText = presentation.messageText
+            alert.informativeText = presentation.informativeText
+            alert.alertStyle = .informational
+            alert.addButton(withTitle: "OK")
+            alert.runModal()
+        }
+    }
+
+    private func showUpdateError(_ error: Error) {
+        let alert = NSAlert()
+        alert.messageText = "Could Not Check for Updates"
+        alert.informativeText = error.localizedDescription
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
     }
 
     // MARK: - About Window

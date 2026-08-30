@@ -14,12 +14,10 @@ All of these operations happen entirely on your device.
 
 ## Network requests
 
-The only outbound network request made by this app is an **optional software update check** via
-the [Sparkle](https://sparkle-project.org) framework. When an update check occurs (automatically at most once per day,
-or when you click "Check for Updates..."), the app contacts:
+The only outbound network request made by this app is an optional, user-initiated software update check. When you click "Check for Updates...", the app contacts:
 
 ```
-https://smnandre.github.io/symfony-cli-menubar/appcast.xml
+https://raw.githubusercontent.com/smnandre/homebrew-tap/main/Casks/symfony-cli-menubar.rb
 ```
 
 This request contains no personal information beyond standard HTTP request metadata (IP address, User-Agent). No
@@ -29,11 +27,6 @@ tracking identifiers, usage data, or analytics are sent.
 
 This app includes no analytics SDK, no crash reporter, and no telemetry of any kind. Nothing about your usage, your
 projects, or your development environment is ever transmitted anywhere.
-
-## Third-party dependencies
-
-**Sparkle** handles update delivery. Sparkle's own privacy policy applies to the update check network request.
-See https://sparkle-project.org.
 
 ## Changes
 

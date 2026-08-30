@@ -1,195 +1,102 @@
 # Testing Guide
 
-## Overview
+## Requirements
 
-Symfony CLI Menu Bar includes unit tests to ensure code quality and reliability. Tests focus on:
-- Path escaping (security)
-- Version parsing (regex patterns)
-- Domain validation
-- File path handling
+- Apple Silicon Mac with macOS 14 or later
+- Full Xcode installation
+- Symfony CLI for manual integration checks
 
-## Running Tests
+## Automated tests
 
-### Prerequisites
-
-- **Full Xcode** (not just Command Line Tools)
-- macOS 13.0+ 
-- Swift 5.9+
-
-### Run Tests
+Run the Swift Testing suites:
 
 ```bash
-# Run all tests
 swift test
-
-# Run with verbose output
-swift test --verbose
-
-# Run specific test
-swift test --filter SymfonyCLIMenuBarTests.testPathEscaping_SingleQuote
 ```
 
-### In Xcode
+The suites cover Symfony CLI parsing, server state transitions, path escaping, domain validation, known-server merging, semantic app versions, and update-check results.
+
+Run a focused test by name:
 
 ```bash
-# Generate Xcode project (if needed)
-swift package generate-xcodeproj
-
-# Open and run tests
-open SymfonyCLIMenuBar.xcodeproj
-# Press Cmd+U to run tests
+swift test --filter UpdateCheckerTests
 ```
 
-## Test Structure
+## Static checks
 
-```
-Tests/
-└── SymfonyCLIMenuBarTests/
-    └── SymfonyServerManagerTests.swift
-```
-
-## Current Tests
-
-### Security Tests
-- `testPathEscaping_SingleQuote` - Escape single quotes in AppleScript paths
-- `testPathEscaping_MultipleQuotes` - Handle multiple quotes
-- `testPathEscaping_NoQuotes` - Safe paths remain unchanged
-
-### Parsing Tests
-- `testVersionParsing_ValidFormat` - Valid PHP version formats (8.4.8)
-- `testVersionParsing_InvalidFormat` - Reject invalid formats
-- `testProxyDomain_ValidWipDomain` - Match .wip domains
-- `testProxyDomain_InvalidDomain` - Reject invalid domains
-- `testServerState_RunningDetection` - Detect running vs stopped servers
-
-### File Path Tests  
-- `testFilePath_TildeExpansion` - Expand ~ to home directory
-- `testFilePath_LastComponent` - Extract project name from path
-
-## Adding Tests
-
-### 1. Create Test Function
-
-```swift
-func testMyFeature() {
-    // Arrange
-    let input = "test"
-    
-    // Act
-    let result = processInput(input)
-    
-    // Assert
-    XCTAssertEqual(result, "expected")
-}
-```
-
-### 2. Test Naming Convention
-
-- Start with `test`
-- Describe what's being tested
-- Include scenario: `testServerParsing_WithMultipleServers`
-
-### 3. Use XCTest Assertions
-
-```swift
-XCTAssertTrue(condition)
-XCTAssertFalse(condition)
-XCTAssertEqual(a, b)
-XCTAssertNotEqual(a, b)
-XCTAssertNil(value)
-XCTAssertNotNil(value)
-XCTAssertThrowsError(try expression)
-```
-
-## Test Coverage Goals
-
-- [ ] CLI output parsing (needs fixtures)
-- [ ] Server state transitions
-- [x] Path escaping (security)
-- [x] Version parsing
-- [x] Domain validation
-- [x] File path handling
-- [ ] Menu building logic
-- [ ] Error handling
-
-## CI Integration
-
-Tests run automatically on:
-- Every push to `main` or `develop`
-- Every pull request
-- Before releases
-
-See `.github/workflows/build.yml`
-
-## Manual Testing Checklist
-
-Since some features require Symfony CLI:
-
-### Server Management
-- [ ] Start a stopped server
-- [ ] Stop a running server  
-- [ ] Start multiple servers
-- [ ] Handle server start failure (port in use)
-- [ ] Refresh server list
-
-### PHP Versions
-- [ ] Detect multiple PHP versions
-- [ ] Show default PHP version (★)
-- [ ] Set PHP as default (creates ~/.php-version)
-- [ ] Copy PHP path
-- [ ] Show in Finder
-
-### Proxies
-- [ ] List .wip domains
-- [ ] Open proxy in browser
-- [ ] Copy proxy URL
-- [ ] Show proxy directory in Finder
-
-### UI/UX
-- [ ] Menu opens quickly
-- [ ] Refresh works
-- [ ] About window displays correctly
-- [ ] Start at Login toggles
-- [ ] Icons and fonts display properly
-- [ ] Status dots show correct colors
-
-### Integration
-- [ ] Terminal opens with correct directory
-- [ ] Server logs open in Terminal
-- [ ] Browser opens with correct URL
-- [ ] Finder shows correct path
-- [ ] Copy to clipboard works
-
-## Known Testing Limitations
-
-1. **XCTest Availability**: Tests require full Xcode installation
-2. **Executable Target**: Can't directly test `@testable import` with executable
-3. **Symfony CLI Dependency**: Integration tests need CLI installed
-4. **macOS Version**: Tests must run on macOS 13.0+
-
-## Future Improvements
-
-1. **Mock Symfony CLI**: Create test fixtures for CLI output
-2. **Integration Tests**: Test actual CLI commands
-3. **UI Tests**: XCUITest for menu interactions
-4. **Performance Tests**: Measure parsing and refresh speed
-5. **Coverage Reports**: Add code coverage tooling
-
-## Debugging Tests
+Before a release, run:
 
 ```bash
-# Run with debug output
-swift test --verbose
-
-# Run single test
-swift test --filter testPathEscaping
-
-# Generate test report
-swift test --enable-code-coverage
+swift-format lint --recursive Sources Tests Package.swift
+shellcheck scripts/*.sh assets/*.sh
+bash -n scripts/*.sh assets/*.sh
+yamllint .github/workflows .yamllint.yml
+plutil -lint config/entitlements.plist
+git diff --check
 ```
 
-## Resources
+## Package verification
 
-- [XCTest Documentation](https://developer.apple.com/documentation/xctest)
-- [Swift Testing Guide](https://swift.org/documentation/package-manager/#testing)
-- [Writing Testable Code](https://developer.apple.com/videos/play/wwdc2017/414/)
+Build the same architecture published by the release workflow:
+
+```bash
+VERSION=1.0.0 ARCHES=arm64 SIGNING_MODE=adhoc ./scripts/package.sh release
+file SymfonyCLIMenuBar.app/Contents/MacOS/SymfonyCLIMenuBar
+test "$(plutil -extract CFBundleShortVersionString raw -o - SymfonyCLIMenuBar.app/Contents/Info.plist)" = "1.0.0"
+test "$(plutil -extract CFBundleVersion raw -o - SymfonyCLIMenuBar.app/Contents/Info.plist)" = "1.0.0"
+codesign --verify --deep --strict --verbose=2 SymfonyCLIMenuBar.app
+```
+
+This command deliberately uses an ad hoc signature for contributors. Maintainers should omit `SIGNING_MODE=adhoc` to verify the local Developer ID path. Only the tagged CI release proves notarization.
+
+## Local update scenarios
+
+Debug builds can replace the public cask with a local fixture. The override is not compiled into release builds.
+
+```bash
+VERSION=1.0.0 ARCHES=arm64 ./scripts/package.sh debug
+
+SYMFONY_CLI_MENUBAR_CASK_FIXTURE="$PWD/Tests/Fixtures/UpdateCasks/newer.rb" \
+SYMFONY_CLI_MENUBAR_CHECK_UPDATES_ON_LAUNCH=1 \
+./SymfonyCLIMenuBar.app/Contents/MacOS/SymfonyCLIMenuBar
+```
+
+Repeat with `older.rb`, `current.rb`, and `invalid.rb`. The expected results are respectively no update, no update, version 1.1.0 available, and an invalid-cask error.
+
+## Manual checklist
+
+### Server management
+
+- [ ] Detect running and stopped servers
+- [ ] Start and stop a server
+- [ ] Refresh the server list
+- [ ] Handle a failed Symfony CLI command
+
+### PHP and proxies
+
+- [ ] Detect installed PHP versions and the default version
+- [ ] Change the default PHP version
+- [ ] List and open `.wip` proxy domains
+- [ ] Copy paths and URLs
+
+### macOS integration
+
+- [ ] Open a server in the default browser
+- [ ] Open logs and project directories in Terminal
+- [ ] Toggle Start at Login, log out, and confirm the app starts in the next session
+- [ ] Show the About window
+- [ ] Check for updates against the version merged in `smnandre/homebrew-tap`
+- [ ] Confirm the copied Homebrew command is correct
+
+### Homebrew release
+
+- [ ] Cask CI passes `brew style`, `brew audit`, ARM installation, signature checks, and uninstall
+- [ ] The downloaded DMG checksum matches the cask
+- [ ] Gatekeeper accepts the installed app as a notarized Developer ID build
+- [ ] `brew upgrade --cask symfony-cli-menubar` resolves after the initial trusted install
+
+## CI boundaries
+
+- `build.yml` runs the Swift build and tests on commits and pull requests.
+- `release.yml` performs the signed ARM-only package, notarization, GitHub Release, and cask PR creation.
+- The tap repository validates the rendered cask independently before it is merged.

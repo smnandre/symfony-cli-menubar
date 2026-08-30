@@ -105,6 +105,10 @@ class MenuBuilder: NSObject, NSMenuDelegate {
         aboutItem.keyEquivalentModifierMask = [.command]
         menu.addItem(aboutItem)
 
+        let updateItem = NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "")
+        updateItem.target = self
+        menu.addItem(updateItem)
+
         menu.addItem(NSMenuItem.separator())
 
         // Quit
@@ -183,16 +187,18 @@ class MenuBuilder: NSObject, NSMenuDelegate {
         let title = NSMutableAttributedString()
         let dotColor = php.isDefault ? NSColor.systemGreen : NSColor.systemGray
         title.append(createStatusDot(color: dotColor))
-        title.append(NSAttributedString(
-            string: php.version,
-            attributes: [.font: monoFont, .foregroundColor: NSColor.labelColor]
-        ))
+        title.append(
+            NSAttributedString(
+                string: php.version,
+                attributes: [.font: monoFont, .foregroundColor: NSColor.labelColor]
+            ))
 
         if php.isDefault {
-            title.append(NSAttributedString(
-                string: "  ★",
-                attributes: [.font: NSFont.systemFont(ofSize: 12), .foregroundColor: NSColor.systemYellow]
-            ))
+            title.append(
+                NSAttributedString(
+                    string: "  ★",
+                    attributes: [.font: NSFont.systemFont(ofSize: 12), .foregroundColor: NSColor.systemYellow]
+                ))
         }
 
         item.attributedTitle = title
@@ -246,7 +252,7 @@ class MenuBuilder: NSObject, NSMenuDelegate {
         if serverManager.isProxyRunning {
             let maxP = UserDefaults.standard.object(forKey: Prefs.maxProxies) as? Double ?? 2.0
             let maxProxies = Int(maxP)
-            
+
             let visibleProxies = Array(proxies.prefix(maxProxies))
             for proxy in visibleProxies {
                 menu.addItem(createProxyMenuItem(proxy))
@@ -294,10 +300,11 @@ class MenuBuilder: NSObject, NSMenuDelegate {
         let title = NSMutableAttributedString()
         let dotColor = proxy.isActive ? NSColor.systemGreen : NSColor.systemGray
         title.append(createStatusDot(color: dotColor))
-        title.append(NSAttributedString(
-            string: proxy.domain,
-            attributes: [.font: labelFont, .foregroundColor: NSColor.labelColor]
-        ))
+        title.append(
+            NSAttributedString(
+                string: proxy.domain,
+                attributes: [.font: labelFont, .foregroundColor: NSColor.labelColor]
+            ))
 
         item.attributedTitle = title
 
@@ -360,7 +367,7 @@ class MenuBuilder: NSObject, NSMenuDelegate {
 
         let maxStopped = Int(UserDefaults.standard.object(forKey: Prefs.maxStoppedServers) as? Double ?? 3.0)
 
-        let runningServers = sortedServers.filter {  $0.isRunning }
+        let runningServers = sortedServers.filter { $0.isRunning }
         let stoppedServers = sortedServers.filter { !$0.isRunning }
 
         for server in runningServers {
@@ -406,16 +413,18 @@ class MenuBuilder: NSObject, NSMenuDelegate {
         let title = NSMutableAttributedString()
         let dotColor = server.isRunning ? NSColor.systemGreen : NSColor.systemGray.withAlphaComponent(0.5)
         title.append(createStatusDot(color: dotColor))
-        title.append(NSAttributedString(
-            string: server.displayName,
-            attributes: [.font: labelFont, .foregroundColor: NSColor.labelColor]
-        ))
+        title.append(
+            NSAttributedString(
+                string: server.displayName,
+                attributes: [.font: labelFont, .foregroundColor: NSColor.labelColor]
+            ))
 
         if server.isRunning {
-            title.append(NSAttributedString(
-                string: "\t:\(server.port)",
-                attributes: [.font: smallMonoFont, .foregroundColor: NSColor.secondaryLabelColor]
-            ))
+            title.append(
+                NSAttributedString(
+                    string: "\t:\(server.port)",
+                    attributes: [.font: smallMonoFont, .foregroundColor: NSColor.secondaryLabelColor]
+                ))
             let paragraphStyle = NSMutableParagraphStyle()
             paragraphStyle.tabStops = [NSTextTab(textAlignment: .right, location: 222)]
             title.addAttribute(.paragraphStyle, value: paragraphStyle, range: NSRange(location: 0, length: title.length))
@@ -513,7 +522,7 @@ class MenuBuilder: NSObject, NSMenuDelegate {
             attributes: [
                 .font: NSFont.systemFont(ofSize: 8),
                 .foregroundColor: color,
-                .baselineOffset: 2.5
+                .baselineOffset: 2.5,
             ]
         )
         dot.append(NSAttributedString(string: "  ", attributes: [.font: labelFont]))
@@ -699,12 +708,14 @@ class MenuBuilder: NSObject, NSMenuDelegate {
 
     @objc func viewServerLogs(_ sender: NSMenuItem) {
         guard let payload = sender.representedObject as? MenuItemPayload<SymfonyServer>,
-              let cliPath = serverManager.symfonyCliPath else { return }
+            let cliPath = serverManager.symfonyCliPath
+        else { return }
 
         let escapedCliPath = cliPath.replacingOccurrences(of: "'", with: "'\\''")
         let escapedDir = payload.value.directory.replacingOccurrences(of: "'", with: "'\\''")
 
-        runAppleScript("""
+        runAppleScript(
+            """
             tell application "Terminal"
                 activate
                 do script "'\(escapedCliPath)' server:log --dir='\(escapedDir)'"
@@ -724,6 +735,10 @@ class MenuBuilder: NSObject, NSMenuDelegate {
         appDelegate?.showAboutWindow()
     }
 
+    @objc func checkForUpdates() {
+        appDelegate?.checkForUpdates()
+    }
+
     @objc func refresh() {
         serverManager.refreshServers()
         appDelegate?.rebuildMenu()
@@ -736,7 +751,8 @@ class MenuBuilder: NSObject, NSMenuDelegate {
     private func openTerminalAtPath(_ path: String) {
         let escapedPath = path.replacingOccurrences(of: "'", with: "'\\''")
 
-        runAppleScript("""
+        runAppleScript(
+            """
             tell application "Terminal"
                 activate
                 do script "cd '\(escapedPath)'"

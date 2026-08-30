@@ -4,7 +4,7 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
+| 1.0.x   | Yes |
 
 ## Reporting a Vulnerability
 
@@ -30,8 +30,9 @@ If you discover a security vulnerability in Symfony CLI Menu Bar, please report 
 ### Security Best Practices
 
 **For Users:**
-- Download releases only from [GitHub Releases](https://github.com/smnandre/symfony-cli-menubar/releases)
-- Verify DMG signature (if signed)
+- Install and upgrade through `smnandre/tap/symfony-cli-menubar`
+- Keep Homebrew and the cask updated
+- Verify release artifacts are signed by Developer ID and notarized by Apple
 - Keep app updated to latest version
 - Grant only necessary permissions
 
@@ -46,7 +47,7 @@ If you discover a security vulnerability in Symfony CLI Menu Bar, please report 
 1. **Terminal Access**: App requests permission to control Terminal for viewing logs
 2. **File System Access**: Reads Symfony project directories and PHP installations
 3. **Process Execution**: Runs `symfony` CLI commands via shell
-4. **No Network Requests**: App does not make external network calls
+4. **Update Check**: A user-initiated check requests the latest release metadata from GitHub
 
 ## Security Updates
 

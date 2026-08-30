@@ -13,30 +13,55 @@ Access, start, and stop your local Symfony servers from the menu bar. Open them 
 - **Server logs**: jump straight to `symfony server:log` in Terminal, pre-filled for the right project
 - **PHP versions**: see all installed PHP versions and set the default
 - **Proxy domains**: manage `.wip` Symfony proxy domains
-- **Auto-updates**: built-in update notifications powered by Sparkle
+- **Update check**: compare the installed version with the published Homebrew cask and copy the upgrade command
 - **Start at Login**: optionally launch on login so it is always available
 
 ## Requirements
 
-- macOS 14.0 or later
+- Apple Silicon Mac with macOS 14.0 or later
 - [Symfony CLI](https://symfony.com/download) installed and available in your `PATH`
 
 ## Installation
 
-### Download (recommended)
+Install Symfony CLI first if needed:
 
-Download the latest `.dmg` from the [Releases page](https://github.com/smnandre/symfony-cli-menubar/releases), open it,
-and drag **Symfony CLI Menu Bar** to your Applications folder.
+```bash
+brew install symfony-cli/tap/symfony-cli
+```
 
-### Build from Source
+Install the app from its cask:
+
+```bash
+brew install --cask smnandre/tap/symfony-cli-menubar
+```
+
+The fully qualified command adds the tap and trusts this cask. After installation, the short cask name is enough:
+
+```bash
+brew upgrade --cask symfony-cli-menubar
+brew uninstall --cask symfony-cli-menubar
+```
+
+If Homebrew reports that the cask is not trusted, trust that cask explicitly and retry:
+
+```bash
+brew trust --cask smnandre/tap/symfony-cli-menubar
+```
+
+Do not trust the entire tap when trusting this cask is sufficient.
+
+### Migrating from a manual installation
+
+Quit Symfony CLI Menu Bar, move the existing app from `/Applications` to the Trash, then run the cask installation command above. This is a clean migration from pre-1.0 builds: preferences, Terminal automation approval, and Start at Login registration are not migrated because 1.0 uses the new bundle identifier `dev.smnandre.symfony-cli-menubar`.
+
+### Build from source
 
 ```bash
 git clone https://github.com/smnandre/symfony-cli-menubar.git
 cd symfony-cli-menubar
 
 # Build and package
-swift build -c release
-./scripts/package.sh release
+VERSION=0.0.0 SIGNING_MODE=adhoc ./scripts/package.sh release
 
 # Run
 open SymfonyCLIMenuBar.app

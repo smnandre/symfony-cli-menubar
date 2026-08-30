@@ -5,14 +5,13 @@
 // "Symfony" is a registered trademark of Symfony SAS, used with kind permission.
 // This app is not affiliated with or endorsed by Symfony SAS or SensioLabs.
 
-
 import AppKit
-import os
 import OSLog
+import os
 
 // MARK: - File-level logger (accessible from nonisolated contexts)
 
-private let logger = Logger(subsystem: "com.simonandre.SymfonyCLIMenuBar", category: "ServerManager")
+private let logger = Logger(subsystem: AppInfo.bundleIdentifier, category: "ServerManager")
 
 // MARK: - Models
 
@@ -75,7 +74,7 @@ class SymfonyServerManager: ObservableObject {
             "/usr/local/bin/symfony",
             "/opt/homebrew/bin/symfony",
             "\(NSHomeDirectory())/.symfony5/bin/symfony",
-            "\(NSHomeDirectory())/.symfony/bin/symfony"
+            "\(NSHomeDirectory())/.symfony/bin/symfony",
         ]
         for path in possiblePaths {
             if fileManager.fileExists(atPath: path) {
@@ -90,7 +89,8 @@ class SymfonyServerManager: ObservableObject {
         if symfonyCliPath == nil {
             let result = await runCommand("/usr/bin/which", arguments: ["symfony"])
             if let path = result.output?.trimmingCharacters(in: .whitespacesAndNewlines),
-               !path.isEmpty, fileManager.fileExists(atPath: path) {
+                !path.isEmpty, fileManager.fileExists(atPath: path)
+            {
                 symfonyCliPath = path
             }
         }
@@ -101,7 +101,8 @@ class SymfonyServerManager: ObservableObject {
         // Detect version
         let versionResult = await runCommand(cliPath, arguments: ["version", "--no-ansi"])
         if let output = versionResult.output,
-           let match = output.firstMatch(of: /(?i)version\s+([\d.]+)/) {
+            let match = output.firstMatch(of: /(?i)version\s+([\d.]+)/)
+        {
             symfonyCliVersion = "CLI " + String(match.1)
         }
         logger.info("Loading initial data from Symfony CLI...")
@@ -179,12 +180,9 @@ class SymfonyServerManager: ObservableObject {
             let trimmed = line.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
 
             // Skip header, separator and empty lines
-            if trimmed.isEmpty ||
-               trimmed.hasPrefix("+") ||
-               trimmed.hasPrefix("-") ||
-               trimmed.contains("Directory") ||
-               trimmed.contains("Port") ||
-               !trimmed.contains("|") {
+            if trimmed.isEmpty || trimmed.hasPrefix("+") || trimmed.hasPrefix("-") || trimmed.contains("Directory")
+                || trimmed.contains("Port") || !trimmed.contains("|")
+            {
                 continue
             }
 
@@ -257,27 +255,26 @@ class SymfonyServerManager: ObservableObject {
 
         for line in lines {
             let trimmed = line.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-            if trimmed.isEmpty || trimmed.hasPrefix("─") || trimmed.hasPrefix("┌") ||
-               trimmed.hasPrefix("└") || trimmed.contains("Version") {
+            if trimmed.isEmpty || trimmed.hasPrefix("─") || trimmed.hasPrefix("┌") || trimmed.hasPrefix("└") || trimmed.contains("Version")
+            {
                 continue
             }
 
             guard let versionMatch = trimmed.firstMatch(of: versionRegex) else { continue }
 
             let version = String(versionMatch.1)
-            let isDefault = trimmed.lowercased().contains("default") ||
-                           trimmed.contains("*") ||
-                           trimmed.contains("⭐")
+            let isDefault = trimmed.lowercased().contains("default") || trimmed.contains("*") || trimmed.contains("⭐")
 
             let path = trimmed.firstMatch(of: pathRegex).map { String($0.1) } ?? ""
 
             if !versions.contains(where: { $0.version == version }) {
-                versions.append(PHPVersion(
-                    id: version,
-                    version: version,
-                    path: path,
-                    isDefault: isDefault
-                ))
+                versions.append(
+                    PHPVersion(
+                        id: version,
+                        version: version,
+                        path: path,
+                        isDefault: isDefault
+                    ))
             }
         }
 
@@ -306,8 +303,9 @@ class SymfonyServerManager: ObservableObject {
 
         for line in lines {
             let trimmed = line.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-            if trimmed.isEmpty || trimmed.hasPrefix("+") || trimmed.hasPrefix("-") ||
-               trimmed.contains("Domain") || trimmed.contains("Directory") {
+            if trimmed.isEmpty || trimmed.hasPrefix("+") || trimmed.hasPrefix("-") || trimmed.contains("Domain")
+                || trimmed.contains("Directory")
+            {
                 continue
             }
 
@@ -316,12 +314,13 @@ class SymfonyServerManager: ObservableObject {
                 let directory = trimmed.firstMatch(of: pathRegex).map { String($0.1) } ?? ""
 
                 if !proxies.contains(where: { $0.domain == domain }) {
-                    proxies.append(SymfonyProxy(
-                        id: domain,
-                        domain: domain,
-                        directory: directory,
-                        isActive: true
-                    ))
+                    proxies.append(
+                        SymfonyProxy(
+                            id: domain,
+                            domain: domain,
+                            directory: directory,
+                            isActive: true
+                        ))
                 }
             }
         }
@@ -544,7 +543,9 @@ class SymfonyServerManager: ObservableObject {
 
             let finish: @Sendable ((String?, Int32)) -> Void = { result in
                 let alreadyDone = completed.withLock { state in
-                    let was = state; state = true; return was
+                    let was = state
+                    state = true
+                    return was
                 }
                 guard !alreadyDone else { return }
                 continuation.resume(returning: result)

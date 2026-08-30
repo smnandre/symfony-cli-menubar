@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-08-30
+
+### Added
+- Homebrew cask release automation through `smnandre/homebrew-tap`
+- Manual published-cask update check with the Homebrew upgrade command
+- Debug-only local cask fixtures for testing every update-check result
+- Apple Silicon architecture validation in the release workflow
+
+### Changed
+- Homebrew is now the supported binary installation and upgrade path
+- Release artifacts are signed and notarized ARM-only DMGs
+- Runtime entitlements are limited to Terminal automation
+- Application bundle identifier is now `dev.smnandre.symfony-cli-menubar`; pre-1.0 preferences and login-item registrations are not migrated
+- Stable release tags are the sole version source for both bundle version keys
+
+### Removed
+- Sparkle, its update feed, framework embedding, and ZIP release artifacts
+- The redundant `config/version.env` file
+
 ## [0.10.3] - 2026-03-31
 
 ### Added

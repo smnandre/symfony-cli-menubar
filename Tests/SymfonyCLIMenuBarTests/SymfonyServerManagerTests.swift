@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SymfonyCLIMenuBar
 
 @Suite("Symfony CLI Menu Bar Tests")
@@ -17,6 +18,11 @@ struct SymfonyCLIMenuBarTests {
     @Test("AppInfo build is non-empty")
     func appInfoBuild() {
         #expect(!AppInfo.build.isEmpty)
+    }
+
+    @Test("AppInfo exposes the release bundle identifier")
+    func appInfoBundleIdentifier() {
+        #expect(AppInfo.bundleIdentifier == "dev.smnandre.symfony-cli-menubar")
     }
 
     // MARK: - Path Escaping (Security)
@@ -49,15 +55,17 @@ struct SymfonyCLIMenuBarTests {
 
     // MARK: - Version Parsing
 
-    @Test("Valid semantic versions are recognized",
-          arguments: ["8.4.8", "8.3.15", "7.4.33", "8.0.0"])
+    @Test(
+        "Valid semantic versions are recognized",
+        arguments: ["8.4.8", "8.3.15", "7.4.33", "8.0.0"])
     func validVersionFormat(version: String) {
         let pattern = /^(\d+)\.(\d+)\.(\d+)$/
         #expect(version.firstMatch(of: pattern) != nil)
     }
 
-    @Test("Invalid version strings are rejected",
-          arguments: ["8.4", "8", "8.4.8.1", "abc", ""])
+    @Test(
+        "Invalid version strings are rejected",
+        arguments: ["8.4", "8", "8.4.8.1", "abc", ""])
     func invalidVersionFormat(version: String) {
         let pattern = /^(\d+)\.(\d+)\.(\d+)$/
         #expect(version.firstMatch(of: pattern) == nil)
@@ -65,15 +73,17 @@ struct SymfonyCLIMenuBarTests {
 
     // MARK: - Domain Patterns
 
-    @Test("Valid .wip domains match pattern",
-          arguments: ["project.wip", "my-app.wip", "test123.wip"])
+    @Test(
+        "Valid .wip domains match pattern",
+        arguments: ["project.wip", "my-app.wip", "test123.wip"])
     func validWipDomain(domain: String) {
         let pattern = /([a-zA-Z0-9.\-]+\.wip)/
         #expect(domain.firstMatch(of: pattern) != nil)
     }
 
-    @Test("Invalid domains do not match .wip pattern",
-          arguments: [".wip", "wip", "project.com", ""])
+    @Test(
+        "Invalid domains do not match .wip pattern",
+        arguments: [".wip", "wip", "project.com", ""])
     func invalidWipDomain(domain: String) {
         let pattern = /^([a-zA-Z0-9.\-]+\.wip)$/
         #expect(domain.firstMatch(of: pattern) == nil)
@@ -137,12 +147,12 @@ struct ServerListParsingTests {
     @MainActor func singleRunningServer() {
         let manager = makeManager()
         let output = """
-        +-------------------------------+------+
-        | Directory                     | Port |
-        +-------------------------------+------+
-        | /Users/john/Sites/my-project  | 8000 |
-        +-------------------------------+------+
-        """
+            +-------------------------------+------+
+            | Directory                     | Port |
+            +-------------------------------+------+
+            | /Users/john/Sites/my-project  | 8000 |
+            +-------------------------------+------+
+            """
         let result = manager.parseServerListText(output)
 
         #expect(result.count == 1)
@@ -156,12 +166,12 @@ struct ServerListParsingTests {
     @MainActor func singleStoppedServer() {
         let manager = makeManager()
         let output = """
-        +-------------------------------+-------------+
-        | Directory                     | Port        |
-        +-------------------------------+-------------+
-        | /Users/john/Sites/my-project  | Not running |
-        +-------------------------------+-------------+
-        """
+            +-------------------------------+-------------+
+            | Directory                     | Port        |
+            +-------------------------------+-------------+
+            | /Users/john/Sites/my-project  | Not running |
+            +-------------------------------+-------------+
+            """
         let result = manager.parseServerListText(output)
 
         #expect(result.count == 1)
@@ -173,14 +183,14 @@ struct ServerListParsingTests {
     @MainActor func multipleServersMixed() {
         let manager = makeManager()
         let output = """
-        +-------------------------------+-------------+
-        | Directory                     | Port        |
-        +-------------------------------+-------------+
-        | /Users/john/Sites/project-a   | 8000        |
-        | /Users/john/Sites/project-b   | Not running |
-        | /Users/john/Sites/project-c   | 8002        |
-        +-------------------------------+-------------+
-        """
+            +-------------------------------+-------------+
+            | Directory                     | Port        |
+            +-------------------------------+-------------+
+            | /Users/john/Sites/project-a   | 8000        |
+            | /Users/john/Sites/project-b   | Not running |
+            | /Users/john/Sites/project-c   | 8002        |
+            +-------------------------------+-------------+
+            """
         let result = manager.parseServerListText(output)
 
         #expect(result.count == 3)
@@ -195,12 +205,12 @@ struct ServerListParsingTests {
     @MainActor func tildePaths() {
         let manager = makeManager()
         let output = """
-        +-------------------------+------+
-        | Directory               | Port |
-        +-------------------------+------+
-        | ~/Sites/my-project      | 8000 |
-        +-------------------------+------+
-        """
+            +-------------------------+------+
+            | Directory               | Port |
+            +-------------------------+------+
+            | ~/Sites/my-project      | 8000 |
+            +-------------------------+------+
+            """
         let result = manager.parseServerListText(output)
         let expected = ("~/Sites/my-project" as NSString).expandingTildeInPath
 
@@ -213,11 +223,11 @@ struct ServerListParsingTests {
     @MainActor func headerFiltering() {
         let manager = makeManager()
         let output = """
-        +-------------------------------+------+
-        | Directory                     | Port |
-        +-------------------------------+------+
-        +-------------------------------+------+
-        """
+            +-------------------------------+------+
+            | Directory                     | Port |
+            +-------------------------------+------+
+            +-------------------------------+------+
+            """
         let result = manager.parseServerListText(output)
 
         #expect(result.isEmpty)
@@ -227,9 +237,9 @@ struct ServerListParsingTests {
     @MainActor func malformedLinesSkipped() {
         let manager = makeManager()
         let output = """
-        | not-a-path | 8000 |
-        | /valid/path/project | 8001 |
-        """
+            | not-a-path | 8000 |
+            | /valid/path/project | 8001 |
+            """
         let result = manager.parseServerListText(output)
 
         #expect(result.count == 1)
@@ -240,10 +250,10 @@ struct ServerListParsingTests {
     @MainActor func noPipeSeparators() {
         let manager = makeManager()
         let output = """
-        Some random text without pipes
-        /Users/john/Sites/project 8000
-        | /Users/john/Sites/project | 8000 |
-        """
+            Some random text without pipes
+            /Users/john/Sites/project 8000
+            | /Users/john/Sites/project | 8000 |
+            """
         let result = manager.parseServerListText(output)
 
         #expect(result.count == 1)
@@ -253,8 +263,8 @@ struct ServerListParsingTests {
     @MainActor func displayNameExtraction() {
         let manager = makeManager()
         let output = """
-        | /Users/john/Sites/my-awesome-project | 8000 |
-        """
+            | /Users/john/Sites/my-awesome-project | 8000 |
+            """
         let result = manager.parseServerListText(output)
 
         #expect(result.count == 1)
@@ -282,8 +292,8 @@ struct PHPVersionsParsingTests {
     @MainActor func singleVersion() {
         let manager = makeManager()
         let output = """
-        | 8.4.8 | /opt/homebrew/bin/php |
-        """
+            | 8.4.8 | /opt/homebrew/bin/php |
+            """
         let result = manager.parsePHPVersionsList(output)
 
         #expect(result.count == 1)
@@ -295,9 +305,9 @@ struct PHPVersionsParsingTests {
     @MainActor func defaultVersionAsterisk() {
         let manager = makeManager()
         let output = """
-        | 8.3.15 | /opt/homebrew/bin/php83 |
-        | 8.4.8 * | /opt/homebrew/bin/php |
-        """
+            | 8.3.15 | /opt/homebrew/bin/php83 |
+            | 8.4.8 * | /opt/homebrew/bin/php |
+            """
         let result = manager.parsePHPVersionsList(output)
 
         #expect(result.count == 2)
@@ -309,8 +319,8 @@ struct PHPVersionsParsingTests {
     @MainActor func defaultVersionKeyword() {
         let manager = makeManager()
         let output = """
-        | 8.4.8 (default) | /opt/homebrew/bin/php |
-        """
+            | 8.4.8 (default) | /opt/homebrew/bin/php |
+            """
         let result = manager.parsePHPVersionsList(output)
 
         #expect(result.count == 1)
@@ -321,9 +331,9 @@ struct PHPVersionsParsingTests {
     @MainActor func deduplication() {
         let manager = makeManager()
         let output = """
-        | 8.4.8 | /opt/homebrew/bin/php |
-        | 8.4.8 | /usr/local/bin/php |
-        """
+            | 8.4.8 | /opt/homebrew/bin/php |
+            | 8.4.8 | /usr/local/bin/php |
+            """
         let result = manager.parsePHPVersionsList(output)
 
         #expect(result.count == 1)
@@ -333,8 +343,8 @@ struct PHPVersionsParsingTests {
     @MainActor func twoPartVersion() {
         let manager = makeManager()
         let output = """
-        | 8.4 | /opt/homebrew/bin/php |
-        """
+            | 8.4 | /opt/homebrew/bin/php |
+            """
         let result = manager.parsePHPVersionsList(output)
 
         #expect(result.count == 1)
@@ -345,12 +355,12 @@ struct PHPVersionsParsingTests {
     @MainActor func headersSkipped() {
         let manager = makeManager()
         let output = """
-        ┌─────────┬──────────────────────────┐
-        │ Version │ Path                     │
-        ├─────────┼──────────────────────────┤
-        │ 8.4.8   │ /opt/homebrew/bin/php    │
-        └─────────┴──────────────────────────┘
-        """
+            ┌─────────┬──────────────────────────┐
+            │ Version │ Path                     │
+            ├─────────┼──────────────────────────┤
+            │ 8.4.8   │ /opt/homebrew/bin/php    │
+            └─────────┴──────────────────────────┘
+            """
         let result = manager.parsePHPVersionsList(output)
 
         #expect(result.count == 1)
@@ -378,8 +388,8 @@ struct ProxiesParsingTests {
     @MainActor func singleProxy() {
         let manager = makeManager()
         let output = """
-        | my-project.wip | /Users/john/Sites/my-project |
-        """
+            | my-project.wip | /Users/john/Sites/my-project |
+            """
         let result = manager.parseProxiesList(output)
 
         #expect(result.count == 1)
@@ -391,10 +401,10 @@ struct ProxiesParsingTests {
     @MainActor func multipleProxies() {
         let manager = makeManager()
         let output = """
-        | project-a.wip | /Users/john/Sites/project-a |
-        | project-b.wip | /Users/john/Sites/project-b |
-        | project-c.wip | /Users/john/Sites/project-c |
-        """
+            | project-a.wip | /Users/john/Sites/project-a |
+            | project-b.wip | /Users/john/Sites/project-b |
+            | project-c.wip | /Users/john/Sites/project-c |
+            """
         let result = manager.parseProxiesList(output)
 
         #expect(result.count == 3)
@@ -404,8 +414,8 @@ struct ProxiesParsingTests {
     @MainActor func domainWithHyphensAndNumbers() {
         let manager = makeManager()
         let output = """
-        | my-app-123.wip | /Users/john/Sites/my-app-123 |
-        """
+            | my-app-123.wip | /Users/john/Sites/my-app-123 |
+            """
         let result = manager.parseProxiesList(output)
 
         #expect(result.count == 1)
@@ -416,8 +426,8 @@ struct ProxiesParsingTests {
     @MainActor func missingDirectory() {
         let manager = makeManager()
         let output = """
-        my-project.wip
-        """
+            my-project.wip
+            """
         let result = manager.parseProxiesList(output)
 
         #expect(result.count == 1)
@@ -544,16 +554,16 @@ struct OptimisticUpdateTests {
     @MainActor func onlyMatchingServerUpdated() {
         let manager = SymfonyServerManager()
         let targetDir = "/Users/john/Sites/target"
-        let otherDir  = "/Users/john/Sites/other"
+        let otherDir = "/Users/john/Sites/other"
         manager.servers = [
             makeServer(directory: targetDir, isRunning: false),
-            makeServer(directory: otherDir,  isRunning: false),
+            makeServer(directory: otherDir, isRunning: false),
         ]
 
         manager.optimisticallyMark(directory: targetDir, running: true)
 
         #expect(manager.servers.first { $0.directory == targetDir }?.isRunning == true)
-        #expect(manager.servers.first { $0.directory == otherDir  }?.isRunning == false)
+        #expect(manager.servers.first { $0.directory == otherDir }?.isRunning == false)
     }
 
     @Test("Tilde path is normalised and matches expanded path")
@@ -586,20 +596,21 @@ struct OptimisticUpdateTests {
         let dir = "/Users/john/Sites/my-project"
         let ts: TimeInterval = 1_700_000_000
         manager.servers = [
-            SymfonyServer(id: "custom-id", directory: dir,
-                          port: 9000, url: "https://127.0.0.1:9000", isRunning: false,
-                          pid: 42, phpVersion: "8.3", ssl: true, lastSeen: ts)
+            SymfonyServer(
+                id: "custom-id", directory: dir,
+                port: 9000, url: "https://127.0.0.1:9000", isRunning: false,
+                pid: 42, phpVersion: "8.3", ssl: true, lastSeen: ts)
         ]
 
         manager.optimisticallyMark(directory: dir, running: true)
 
         let updated = manager.servers[0]
-        #expect(updated.id          == "custom-id")
-        #expect(updated.port        == 9000)
-        #expect(updated.pid         == 42)
-        #expect(updated.phpVersion  == "8.3")
-        #expect(updated.lastSeen    == ts)
-        #expect(updated.isRunning   == true)
+        #expect(updated.id == "custom-id")
+        #expect(updated.port == 9000)
+        #expect(updated.pid == 42)
+        #expect(updated.phpVersion == "8.3")
+        #expect(updated.lastSeen == ts)
+        #expect(updated.isRunning == true)
     }
 }
 
@@ -733,7 +744,7 @@ struct KnownServerMergingTests {
             let result = manager.mergeWithKnownServers([makeServer(directory: "/Sites/live", isRunning: true)])
 
             #expect(result.count == 2)
-            #expect(result.filter {  $0.isRunning }.count == 1)
+            #expect(result.filter { $0.isRunning }.count == 1)
             #expect(result.filter { !$0.isRunning }.count == 1)
         }
     }
@@ -905,12 +916,12 @@ struct PHPVersionsEdgeCaseTests {
     @MainActor func unicodeBordersSkipped() throws {
         let manager = makeManager()
         let output = """
-        ┌─────────┬───────────────────────┐
-        │ Version │ Path                  │
-        ├─────────┼───────────────────────┤
-        │ 8.4.8   │ /opt/homebrew/bin/php │
-        └─────────┴───────────────────────┘
-        """
+            ┌─────────┬───────────────────────┐
+            │ Version │ Path                  │
+            ├─────────┼───────────────────────┤
+            │ 8.4.8   │ /opt/homebrew/bin/php │
+            └─────────┴───────────────────────┘
+            """
         let result = manager.parsePHPVersionsList(output)
 
         try #require(result.count == 1)
@@ -921,9 +932,9 @@ struct PHPVersionsEdgeCaseTests {
     @MainActor func duplicatesAcrossPathsDeduplicated() {
         let manager = makeManager()
         let output = """
-        | 8.4.8 | /opt/homebrew/bin/php |
-        | 8.4.8 | /usr/local/bin/php    |
-        """
+            | 8.4.8 | /opt/homebrew/bin/php |
+            | 8.4.8 | /usr/local/bin/php    |
+            """
         let result = manager.parsePHPVersionsList(output)
 
         #expect(result.count == 1)
@@ -941,9 +952,9 @@ struct ProxyParsingEdgeCaseTests {
     @MainActor func duplicateDomainDeduplicated() throws {
         let manager = makeManager()
         let output = """
-        | project.wip | /Sites/project-v1 |
-        | project.wip | /Sites/project-v2 |
-        """
+            | project.wip | /Sites/project-v1 |
+            | project.wip | /Sites/project-v2 |
+            """
         let result = manager.parseProxiesList(output)
 
         try #require(result.count == 1)
@@ -963,9 +974,9 @@ struct ProxyParsingEdgeCaseTests {
     @MainActor func parsedProxiesAreActive() {
         let manager = makeManager()
         let output = """
-        | alpha.wip | /Sites/alpha |
-        | beta.wip  | /Sites/beta  |
-        """
+            | alpha.wip | /Sites/alpha |
+            | beta.wip  | /Sites/beta  |
+            """
         let result = manager.parseProxiesList(output)
 
         #expect(result.allSatisfy { $0.isActive })
@@ -975,12 +986,12 @@ struct ProxyParsingEdgeCaseTests {
     @MainActor func headerLinesSkipped() throws {
         let manager = makeManager()
         let output = """
-        +----------------+----------------------+
-        | Domain         | Directory            |
-        +----------------+----------------------+
-        | my-project.wip | /Sites/my-project    |
-        +----------------+----------------------+
-        """
+            +----------------+----------------------+
+            | Domain         | Directory            |
+            +----------------+----------------------+
+            | my-project.wip | /Sites/my-project    |
+            +----------------+----------------------+
+            """
         let result = manager.parseProxiesList(output)
 
         try #require(result.count == 1)
@@ -1008,9 +1019,10 @@ struct CLINotFoundTests {
         let manager = SymfonyServerManager()
         manager.symfonyCliPath = nil
         manager.servers = [
-            SymfonyServer(id: "a", directory: "/Sites/a",
-                          port: 8000, url: "", isRunning: true,
-                          pid: nil, phpVersion: nil, ssl: true, lastSeen: 0)
+            SymfonyServer(
+                id: "a", directory: "/Sites/a",
+                port: 8000, url: "", isRunning: true,
+                pid: nil, phpVersion: nil, ssl: true, lastSeen: 0)
         ]
 
         await manager.refreshServersAsync()
@@ -1104,12 +1116,12 @@ struct PHPVersionsASCIIPipeTests {
     @MainActor func asciiPipeHeaderSkipped() throws {
         let manager = makeManager()
         let output = """
-        +---------+--------------------------+
-        | Version | Path                     |
-        +---------+--------------------------+
-        | 8.4.8   | /opt/homebrew/bin/php    |
-        +---------+--------------------------+
-        """
+            +---------+--------------------------+
+            | Version | Path                     |
+            +---------+--------------------------+
+            | 8.4.8   | /opt/homebrew/bin/php    |
+            +---------+--------------------------+
+            """
         let result = manager.parsePHPVersionsList(output)
 
         try #require(result.count == 1)

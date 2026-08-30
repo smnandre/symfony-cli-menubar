@@ -4,12 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'docs/appcast.xml'
       - 'docs/web/**'
-  workflow_run:
-    workflows: [Release]
-    types: [completed]
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -38,7 +33,6 @@ jobs:
         run: |
           mkdir -p _site
           cp -r docs/web/. _site/
-          cp docs/appcast.xml _site/appcast.xml
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

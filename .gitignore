@@ -5,8 +5,6 @@ assets/AppIcon.iconset/
 *.dmg
 *.zip
 
-# Vendored binaries (downloaded on demand by scripts/embed_sparkle.sh)
-vendor/
 *.dSYM
 *.swiftmodule
 *.swiftdoc

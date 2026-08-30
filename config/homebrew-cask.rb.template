@@ -1,0 +1,23 @@
+cask "symfony-cli-menubar" do
+  version "__VERSION__"
+  sha256 "__SHA256__"
+
+  url "https://github.com/smnandre/symfony-cli-menubar/releases/download/v#{version}/SymfonyCLIMenuBar-#{version}.dmg"
+  name "Symfony CLI Menu Bar"
+  desc "Manage Symfony CLI servers from the menu bar"
+  homepage "https://github.com/smnandre/symfony-cli-menubar"
+
+  livecheck do
+    url :url
+    strategy :github_latest
+  end
+
+  depends_on arch: :arm64
+  depends_on macos: :sonoma
+
+  app "SymfonyCLIMenuBar.app"
+
+  uninstall quit: "dev.smnandre.symfony-cli-menubar"
+
+  zap trash: "~/Library/Preferences/dev.smnandre.symfony-cli-menubar.plist"
+end

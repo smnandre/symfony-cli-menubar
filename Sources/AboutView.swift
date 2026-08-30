@@ -10,7 +10,7 @@ import SwiftUI
 struct AboutView: View {
     @Environment(\.openURL) private var openURL
 
-    private let bodyFont  = Font.system(size: 12)
+    private let bodyFont = Font.system(size: 12)
     private let labelFont = Font.system(size: 12, weight: .semibold)
 
     var body: some View {
@@ -46,7 +46,7 @@ struct AboutView: View {
 
             HStack(spacing: 16) {
                 Link("Website", destination: URL(string: AppInfo.websiteURL)!)
-                Link("GitHub",  destination: URL(string: AppInfo.githubURL)!)
+                Link("GitHub", destination: URL(string: AppInfo.githubURL)!)
                 if let licenseURL = URL(string: "\(AppInfo.githubURL)/blob/main/LICENSE") {
                     Link("License", destination: licenseURL)
                 }
@@ -60,7 +60,7 @@ struct AboutView: View {
                 Text("Created by Simon André")
                     .font(labelFont)
                 HStack(spacing: 8) {
-                    Link("@smnandre",    destination: URL(string: "https://github.com/smnandre")!)
+                    Link("@smnandre", destination: URL(string: "https://github.com/smnandre")!)
                     Text("·").foregroundStyle(.tertiary)
                     Link("smnandre.dev", destination: URL(string: AppInfo.websiteURL)!)
                 }

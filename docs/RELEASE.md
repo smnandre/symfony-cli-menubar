@@ -7,11 +7,8 @@ DMG consumed by the cask.
 The release workflow accepts stable `vX.Y.Z` tags. It runs the project checks,
 builds and verifies the signed app and DMG, submits the DMG for notarization,
 publishes the GitHub Release, and opens a pull request against the Homebrew tap.
-It does not merge that pull request or update the public website.
-
-Release preparation, tap publication, and website publication are reviewed as
-separate pull requests. The public website is updated only after the cask is
-available through Homebrew.
+The tap merges generated release pull requests after all cask checks pass. The
+public website uses version-independent release and installation links.
 
 Maintainer credentials and operational procedures are intentionally not stored
 in this repository.
@@ -22,4 +19,3 @@ in this repository.
 - A failed GitHub Release leaves no cask pull request.
 - A failed cask pull request leaves the GitHub Release available but does not
   advertise an installable Homebrew update.
-- A failed website publication leaves the previous public version visible.

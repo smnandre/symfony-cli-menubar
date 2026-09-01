@@ -43,6 +43,8 @@ fi
 TODAY=$(date +%Y-%m-%d)
 echo "Preparing changelog for v${NEW_VERSION}..."
 
+/usr/libexec/PlistBuddy -c "Set :Version ${NEW_VERSION}" "$ROOT/config/Version.plist"
+
 # --- CHANGELOG.md ---
 CHANGELOG="$ROOT/CHANGELOG.md"
 if [[ -f "$CHANGELOG" ]]; then
@@ -63,9 +65,6 @@ fi
 echo ""
 echo "Done. Next steps:"
 echo "  1. Fill in release notes under [${NEW_VERSION}] in CHANGELOG.md"
-echo "  2. git add CHANGELOG.md"
+echo "  2. git add CHANGELOG.md config/Version.plist"
 echo "  3. git commit -m 'chore: bump to v${NEW_VERSION}'"
 echo "  4. Push tag to release: git tag v${NEW_VERSION} && git push origin v${NEW_VERSION}"
-echo ""
-echo "  Note: The release workflow never modifies main."
-echo "        Update the website only after the Homebrew cask is merged."

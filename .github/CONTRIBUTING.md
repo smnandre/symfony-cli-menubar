@@ -97,8 +97,8 @@ SymfonyCLIMenuBar/
 │   ├── bump-version.sh              # Optional local version bump preview
 │   ├── package.sh                   # Build, bundle, and sign the .app
 │   ├── create-dmg.sh                # DMG packaging for distribution
-│   ├── render_homebrew_cask.sh      # Render release cask metadata
-│   └── finalize-release-site.sh     # Publish site metadata after cask merge
+│   └── render_homebrew_cask.sh      # Render release cask metadata
+├── Makefile                         # Local and CI entry points
 ├── .github/workflows/
 │   ├── build.yml                  # CI for PRs and commits
 │   └── release.yml                # Release automation on tags

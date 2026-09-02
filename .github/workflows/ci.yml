@@ -1,0 +1,13 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    uses: smnandre/.github/.github/workflows/Swift.yml@dde72e3a0d3ba29999360eab39e78a111d572b47
+    with:
+      runner: macos-26

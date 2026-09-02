@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDisplayName</key>
+    <string>Symfony CLI MenuBar</string>
+    <key>CFBundleExecutable</key>
+    <string>SymfonyCLIMenuBar</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+    <key>CFBundleIdentifier</key>
+    <string>dev.smnandre.symfony-cli-menubar</string>
+    <key>CFBundleName</key>
+    <string>Symfony CLI MenuBar</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>0.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>0</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>26.0</string>
+    <key>LSUIElement</key>
+    <true/>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>Symfony CLI MenuBar needs permission to open Terminal for viewing logs and running commands.</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>BuildTimestamp</key>
+    <string></string>
+    <key>GitCommit</key>
+    <string></string>
+</dict>
+</plist>

@@ -25,7 +25,8 @@ enum AppInfo {
     )!
     static let homebrewUpgradeCommand = "brew upgrade --cask symfony-cli-menubar"
     static let twitterURL = "https://x.com/simonandre"
-    static let websiteURL = "https://smnandre.dev"
+    static let websiteURL = "https://smnand.re/sfmenubar"
+    static let supportURL = "https://smnandre.dev"
     static let copyright = "© 2026 Simon André. All rights reserved."
     static let symfonyCliURL = "https://github.com/symfony-cli/symfony-cli"
 

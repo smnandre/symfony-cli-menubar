@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct AboutView: View {
-    @Environment(\.openURL) private var openURL
-
     private let bodyFont = Font.system(size: 12)
     private let labelFont = Font.system(size: 12, weight: .semibold)
 
@@ -62,7 +60,7 @@ struct AboutView: View {
                 HStack(spacing: 8) {
                     Link("@smnandre", destination: URL(string: "https://github.com/smnandre")!)
                     Text("·").foregroundStyle(.tertiary)
-                    Link("smnandre.dev", destination: URL(string: AppInfo.websiteURL)!)
+                    Link("smnandre.dev", destination: URL(string: AppInfo.supportURL)!)
                 }
                 .font(bodyFont)
             }

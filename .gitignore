@@ -1,5 +1,8 @@
 # Build artifacts
 .build/
+build/
+dist/
+/Casks/
 assets/AppIcon.iconset/
 *.app
 *.dmg

@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "SymfonyCLIMenuBar",
     platforms: [
-        .macOS(.v14)
+        .macOS(.v26)
     ],
     targets: [
         .executableTarget(

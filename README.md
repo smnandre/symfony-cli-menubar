@@ -1,6 +1,6 @@
 # Symfony CLI Menu Bar
 
-> A native macOS menu bar app for managing local [Symfony CLI](https://github.com/symfony-cli/symfony-cli) servers.
+> A native macOS menu bar app for managing local [Symfony CLI](https://github.com/symfony-cli/symfony-cli) servers. Visit [smnand.re/sfmenubar](https://smnand.re/sfmenubar).
 
 ![Symfony CLI Menu Bar](assets/symfony-cli-menubar.banner.jpg)
 
@@ -18,7 +18,7 @@ Access, start, and stop your local Symfony servers from the menu bar. Open them 
 
 ## Requirements
 
-- Apple Silicon Mac with macOS 14.0 or later
+- Apple Silicon Mac with macOS 26 or later
 - [Symfony CLI](https://symfony.com/download) installed and available in your `PATH`
 
 ## Installation
@@ -61,10 +61,10 @@ git clone https://github.com/smnandre/symfony-cli-menubar.git
 cd symfony-cli-menubar
 
 # Build and package
-VERSION=0.0.0 SIGNING_MODE=adhoc ./scripts/package.sh release
+make package
 
 # Run
-open SymfonyCLIMenuBar.app
+open build/SymfonyCLIMenuBar.app
 ```
 
 ## Contributing

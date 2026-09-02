@@ -5,7 +5,7 @@ cask "symfony-cli-menubar" do
   url "https://github.com/smnandre/symfony-cli-menubar/releases/download/v#{version}/SymfonyCLIMenuBar-#{version}.dmg"
   name "Symfony CLI Menu Bar"
   desc "Manage Symfony CLI servers from the menu bar"
-  homepage "https://github.com/smnandre/symfony-cli-menubar"
+  homepage "https://smnand.re/sfmenubar"
 
   livecheck do
     url :url
@@ -13,7 +13,7 @@ cask "symfony-cli-menubar" do
   end
 
   depends_on arch: :arm64
-  depends_on macos: :sonoma
+  depends_on macos: :tahoe
 
   app "SymfonyCLIMenuBar.app"
 

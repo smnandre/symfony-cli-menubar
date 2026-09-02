@@ -7,36 +7,6 @@
 
 import AppKit
 
-// MARK: - Custom Heart Button
-
-class HeartButton: NSButton {
-    override func mouseEntered(with event: NSEvent) {
-        super.mouseEntered(with: event)
-        contentTintColor = .systemPink
-    }
-
-    override func mouseExited(with event: NSEvent) {
-        super.mouseExited(with: event)
-        contentTintColor = .secondaryLabelColor
-    }
-
-    override func updateTrackingAreas() {
-        super.updateTrackingAreas()
-
-        for area in trackingAreas {
-            removeTrackingArea(area)
-        }
-
-        let trackingArea = NSTrackingArea(
-            rect: bounds,
-            options: [.mouseEnteredAndExited, .activeAlways],
-            owner: self,
-            userInfo: nil
-        )
-        addTrackingArea(trackingArea)
-    }
-}
-
 // MARK: - Generic payload wrapper for menu representedObject (structs don't work)
 
 final class MenuItemPayload<T>: NSObject {
@@ -93,31 +63,55 @@ class MenuBuilder: NSObject, NSMenuDelegate {
             menu.addItem(NSMenuItem.separator())
         }
 
-        // Settings
+        let updateItem = NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "")
+        updateItem.target = self
+        menu.addItem(updateItem)
+
         let settingsItem = NSMenuItem(title: "Settings", action: #selector(showPreferences), keyEquivalent: ",")
         settingsItem.target = self
         settingsItem.keyEquivalentModifierMask = [.command]
         menu.addItem(settingsItem)
 
-        // About
-        let aboutItem = NSMenuItem(title: "About", action: #selector(showAbout), keyEquivalent: "i")
-        aboutItem.target = self
-        aboutItem.keyEquivalentModifierMask = [.command]
-        menu.addItem(aboutItem)
-
-        let updateItem = NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "")
-        updateItem.target = self
-        menu.addItem(updateItem)
-
         menu.addItem(NSMenuItem.separator())
 
-        // Quit
+        let aboutItems = Self.makeAboutMenuItems(
+            target: self,
+            aboutAction: #selector(showAbout),
+            supportAction: #selector(showSupport)
+        )
+        menu.addItem(aboutItems.about)
+        menu.addItem(aboutItems.support)
+
         let quitItem = NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q")
         quitItem.target = self
         quitItem.keyEquivalentModifierMask = [.command]
         menu.addItem(quitItem)
 
         return menu
+    }
+
+    static func makeAboutMenuItems(
+        target: AnyObject,
+        aboutAction: Selector,
+        supportAction: Selector
+    ) -> (about: NSMenuItem, support: NSMenuItem) {
+        let aboutItem = NSMenuItem(
+            title: "About Symfony CLI MenuBar",
+            action: aboutAction,
+            keyEquivalent: ""
+        )
+        aboutItem.target = target
+
+        let supportItem = NSMenuItem(
+            title: "Support Symfony CLI MenuBar",
+            action: supportAction,
+            keyEquivalent: ""
+        )
+        supportItem.target = target
+        supportItem.isAlternate = true
+        supportItem.keyEquivalentModifierMask = [.option]
+
+        return (aboutItem, supportItem)
     }
 
     // MARK: - NSMenuDelegate
@@ -143,18 +137,8 @@ class MenuBuilder: NSObject, NSMenuDelegate {
         let titleLabel = NSTextField(labelWithString: AppInfo.name)
         titleLabel.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
         titleLabel.textColor = .labelColor
-        titleLabel.frame = NSRect(x: 12, y: 4, width: 240, height: 20)
+        titleLabel.frame = NSRect(x: 12, y: 4, width: 276, height: 20)
         headerView.addSubview(titleLabel)
-
-        // Heart button
-        let heartButton = HeartButton(frame: NSRect(x: 268, y: 4, width: 20, height: 20))
-        heartButton.image = NSImage(systemSymbolName: "heart", accessibilityDescription: "Support")
-        heartButton.bezelStyle = .inline
-        heartButton.isBordered = false
-        heartButton.contentTintColor = .secondaryLabelColor
-        heartButton.action = #selector(openGitHub)
-        heartButton.target = self
-        headerView.addSubview(heartButton)
 
         headerItem.view = headerView
         menu.addItem(headerItem)
@@ -563,12 +547,6 @@ class MenuBuilder: NSObject, NSMenuDelegate {
 
     // MARK: - Actions
 
-    @objc func openGitHub() {
-        if let url = URL(string: AppInfo.githubURL) {
-            NSWorkspace.shared.open(url)
-        }
-    }
-
     @objc func copyPHPPath(_ sender: NSMenuItem) {
         guard let payload = sender.representedObject as? MenuItemPayload<PHPVersion> else { return }
         NSPasteboard.general.clearContents()
@@ -733,6 +711,10 @@ class MenuBuilder: NSObject, NSMenuDelegate {
 
     @objc func showAbout() {
         appDelegate?.showAboutWindow()
+    }
+
+    @objc func showSupport() {
+        NSWorkspace.shared.open(URL(string: AppInfo.supportURL)!)
     }
 
     @objc func checkForUpdates() {

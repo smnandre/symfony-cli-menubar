@@ -27,13 +27,11 @@
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "Symfony CLI Menu Bar",
-    "operatingSystem": "macOS 14+",
+    "operatingSystem": "macOS 26+",
     "applicationCategory": "DeveloperApplication",
     "description": "Native macOS app interface for the Symfony CLI. Manage local servers, view logs, switch PHP versions, and access proxy domains directly from the status bar.",
     "license": "https://opensource.org/licenses/MIT",
     "url": "https://github.com/smnandre/symfony-cli-menubar",
-    "downloadUrl": "https://github.com/smnandre/symfony-cli-menubar/releases/download/v1.0.0/SymfonyCLIMenuBar-1.0.0.dmg",
-    "softwareVersion": "1.0.0",
     "author": {
       "@type": "Person",
       "name": "Simon Andr\u00e9",
@@ -580,7 +578,6 @@
           justify-content: space-between;
 
           strong { font-size: 0.96rem; font-weight: 600; color: var(--dk-text); }
-          .pop-heart { font-size: 0.8rem; color: var(--dk-text-faint); }
         }
 
         .pop-label {
@@ -608,16 +605,6 @@
       .pstar { font-size: 0.72rem; color: oklch(0.78 0.18 75); margin-inline: 0.1rem; }
       .pport { font-size: 0.78rem; color: var(--dk-text-dim); }
       .parr  { font-size: 0.66rem; color: var(--dk-text-faint); }
-
-      .menu-row.about {
-        .about-default { display: inline; }
-        .about-hover   { display: none; }
-
-        &:hover {
-          .about-default { display: none; }
-          .about-hover   { display: inline; }
-        }
-      }
 
       .submenu {
         --dk-bg: oklch(0.26 0.015 264);
@@ -830,29 +817,27 @@
 
         <div class="actions">
           <div class="btn-ring">
-            <a class="btn btn--primary" href="https://github.com/smnandre/symfony-cli-menubar#installation" title="Install Symfony CLI Menu Bar with Homebrew">
+            <a class="btn btn--primary" href="https://github.com/smnandre/symfony-cli-menubar" title="Symfony CLI Menu Bar on GitHub">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M12 15V3"/><path d="m8 11 4 4 4-4"/>
                 <path d="M2 17v1a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-1"/>
               </svg>
-              Install with Homebrew
+              View on GitHub
             </a>
           </div>
           <div class="btn-ring">
-            <a class="btn btn--secondary" href="https://github.com/smnandre/symfony-cli-menubar" title="Symfony CLI Menu Bar on GitHub">
+            <a class="btn btn--secondary" href="https://github.com/smnandre/symfony-cli-menubar/releases" title="Symfony CLI Menu Bar releases">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M12 2C6.477 2 2 6.484 2 12.021c0 4.428 2.865 8.185 6.839 9.504.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.004.071 1.532 1.032 1.532 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.112-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.026 2.747-1.026.546 1.378.202 2.397.1 2.65.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.203 22 16.447 22 12.021 22 6.484 17.523 2 12 2z"/>
               </svg>
-              View on GitHub
+              Releases
             </a>
           </div>
         </div>
 
         <div class="meta">
           <p class="meta-line">
-            <strong>v1.0.0</strong>
-            <span class="meta-sep">·</span>
-            Apple Silicon - macOS 14+
+            Apple Silicon - macOS 26+
             <span class="meta-sep">·</span>
             MIT License
             <span class="meta-sep">·</span>
@@ -877,7 +862,6 @@
           <div class="popup">
             <div class="pop-header">
               <a href="/" class="pop-link"><strong>Symfony CLI</strong></a>
-              <span class="pop-heart">♡</span>
             </div>
             <div class="dk-sep"></div>
 
@@ -933,10 +917,7 @@
             <div class="dk-sep"></div>
 
             <div class="menu-row spread">Settings <kbd>⌘,</kbd></div>
-            <a href="#" class="menu-row spread about clickable">
-              <span><span class="about-default">About</span><span class="about-hover">About me</span></span>
-              <kbd>⌘I</kbd>
-            </a>
+            <div class="menu-row spread">About Symfony CLI MenuBar</div>
 
             <div class="dk-sep"></div>
 
@@ -1004,8 +985,8 @@
       <a href="https://smnandre.dev" rel="author me">Simon André</a>
     </div>
     <nav class="footer__nav" aria-label="Legal links">
-      <a class="footer__link" href="https://github.com/smnandre/symfony-cli-menubar/" rel="noopener" target="_blank">License</a>
-      <a class="footer__link" href="https://github.com/smnandre/symfony-cli-menubar/" rel="noopener" target="_blank">Privacy</a>
+      <a class="footer__link" href="https://github.com/smnandre/symfony-cli-menubar/blob/main/LICENSE" rel="noopener" target="_blank">License</a>
+      <a class="footer__link" href="https://github.com/smnandre/symfony-cli-menubar/blob/main/PRIVACY.md" rel="noopener" target="_blank">Privacy</a>
     </nav>
   </footer>
 

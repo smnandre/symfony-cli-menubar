@@ -1,27 +1,12 @@
 # Symfony CLI Menu Bar
 
-> A native macOS menu bar app for managing local [Symfony CLI](https://github.com/symfony-cli/symfony-cli) servers. Visit [smnand.re/sfmenubar](https://smnand.re/sfmenubar).
+![Symfony CLI Menu Bar](docs/web/symfony-cli-menubar.png)
 
-![Symfony CLI Menu Bar](assets/symfony-cli-menubar.banner.jpg)
+Manage [Symfony CLI](https://github.com/symfony-cli/symfony-cli) servers, PHP versions, and proxy domains from the macOS menu bar.
 
-Access, start, and stop your local Symfony servers from the menu bar. Open them in your browser, view logs, manage PHP versions and proxy domains — without leaving your current context.
+## Install
 
-## Features
-
-- **Server management**: view all your Symfony local servers at a glance; start and stop them directly from the menu
-- **One-click browser open**: open any running server in your default browser instantly
-- **Server logs**: jump straight to `symfony server:log` in Terminal, pre-filled for the right project
-- **PHP versions**: see all installed PHP versions and set the default
-- **Proxy domains**: manage `.wip` Symfony proxy domains
-- **Update check**: compare the installed version with the published Homebrew cask and copy the upgrade command
-- **Start at Login**: optionally launch on login so it is always available
-
-## Requirements
-
-- Apple Silicon Mac with macOS 26 or later
-- [Symfony CLI](https://symfony.com/download) installed and available in your `PATH`
-
-## Installation
+### Homebrew
 
 Install Symfony CLI first if needed:
 
@@ -29,64 +14,67 @@ Install Symfony CLI first if needed:
 brew install symfony-cli/tap/symfony-cli
 ```
 
-Install the app from its cask:
+Then install the app:
 
 ```bash
+brew trust --cask smnandre/tap/symfony-cli-menubar
 brew install --cask smnandre/tap/symfony-cli-menubar
 ```
 
-The fully qualified command adds the tap and trusts this cask. After installation, the short cask name is enough:
+After installation, the short cask name is enough:
 
 ```bash
 brew upgrade --cask symfony-cli-menubar
 brew uninstall --cask symfony-cli-menubar
 ```
 
-If Homebrew reports that the cask is not trusted, trust that cask explicitly and retry:
+### Direct download
 
-```bash
-brew trust --cask smnandre/tap/symfony-cli-menubar
-```
+Download the DMG from the [latest release](https://github.com/smnandre/symfony-cli-menubar/releases/latest), open it, then drag `SymfonyCLIMenuBar.app` to `Applications`.
 
-Do not trust the entire tap when trusting this cask is sufficient.
+## Usage
 
-### Migrating from a manual installation
+- View local Symfony servers
+- Start and stop servers
+- Open running servers in your browser
+- View server logs in Terminal
+- Choose the default PHP version
+- Manage Symfony proxy domains
+- Check for updates through the published Homebrew cask
+- Launch the app when you sign in
 
-Quit Symfony CLI Menu Bar, move the existing app from `/Applications` to the Trash, then run the cask installation command above. This is a clean migration from pre-1.0 builds: preferences, Terminal automation approval, and Start at Login registration are not migrated because 1.0 uses the new bundle identifier `dev.smnandre.symfony-cli-menubar`.
+## Requirements
 
-### Build from source
+- macOS 26 or later
+- Apple silicon
+- [Symfony CLI](https://symfony.com/download) available in your `PATH`
+
+## Build from source
 
 ```bash
 git clone https://github.com/smnandre/symfony-cli-menubar.git
 cd symfony-cli-menubar
 
-# Build and package
-make package
-
-# Run
-open build/SymfonyCLIMenuBar.app
+make verify
+make run
 ```
 
 ## Contributing
 
-Contributions are welcome. Please open an issue before submitting a pull request for significant changes.
-See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for development guidelines.
+Contributions are welcome. Run `make verify` before opening a pull request. See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for development guidelines.
 
 ## Thanks
 
-Symfony CLI Menu Bar builds on top of remarkable open source work.
+Thanks to the Symfony and Symfony CLI projects and their contributors.
 
-**[Symfony](https://symfony.com)**: the PHP framework this whole ecosystem is built on.
+**[Symfony](https://symfony.com)**: the PHP framework.
 Fabien Potencier [@fabpot](https://github.com/fabpot) and the Symfony contributors.
 
-**[Symfony CLI](https://github.com/symfony-cli/symfony-cli)**: the local server tooling this app brings to your menu
-bar.
+**[Symfony CLI](https://github.com/symfony-cli/symfony-cli)**: the local server tooling this app brings to the menu bar.
 Fabien Potencier [@fabpot](https://github.com/fabpot) and Tugdual Saunier [@tucksaun](https://github.com/tucksaun).
 
 ## License
 
-Released by [Simon André](https://smnandre.dev) under the [MIT License](LICENSE).
+Symfony CLI Menu Bar is released by [Simon André](https://smnandre.dev) under the [MIT License](LICENSE).
 
-"Symfony" and the Symfony logo are registered trademarks of [Symfony SAS](https://symfony.com). The Symfony name and
-logo are used in this project with the kind permission of the Symfony team. This project is not affiliated with or
-endorsed by Symfony SAS or SensioLabs. See [NOTICE](NOTICE) for full trademark notices.
+"Symfony" and the Symfony logo are registered trademarks of [Symfony SAS](https://symfony.com). The Symfony name and logo are used in this project with the kind permission of the Symfony team. This project is not affiliated with or endorsed by Symfony SAS or SensioLabs. See [NOTICE](NOTICE) for full trademark notices.
